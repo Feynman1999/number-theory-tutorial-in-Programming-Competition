@@ -53,58 +53,134 @@
 \end{proof}
 
 
+\lstinputlisting[language=C++, style=codestyle2]{code01/gcd.cpp}
+
+说到GCD，往往还会提到最小公倍数(LCM)，有如下式子
+\begin{align*}
+lcm(a,b) * gcd(a,b) &=a*b \\
+lcm(S/a, S/b) &= S/gcd(a, b)
+\end{align*}
+
 
 \section{线性方程定理}
-test
 
+已知两个整数a,b，现在我们观察由a的倍数加上b的倍数得到的所有可能整数，也就是说{\heiti 考察$ax+by$得到的所有整数}，其中x,y可以是任何整数。
 
+例如取$a=42$,$b=30$，随意列出一些x,y，会发现得到的数都可以被6整除。这其实很显然，因为42和30都能被6整除。更一般的，{\heiti 显然形如$ax+by$的每个数被$gcd(a,b)$整除}，因为$gcd(a,b)$整除a与b。
 
+接着问题又来了，$ax+by=gcd(a,b)$是否一定有整数解呢？答案是肯定的。证明是利用{\heiti 拓展欧几里得算法}，不停的将中间商和余数用a和b表示，{\heiti 最后的中间商gcd(a,b)一定可以用a,b表示}。也称欧几里得回代法。
 
+\begin{example}
+欧几里得回代法解$60x+22y=gcd(60,22)$
 
+首先写出欧几里得算法计算gcd(60,22)的过程：
+\begin{align*}
+60=2 * 22+16 \\
+22=1 * 16+6 \\
+16=2 * 6+4 \\
+6=1 * 4+2 \\
+4=2 * 2+0
+\end{align*}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.7\textwidth]{tlshell.png}
-\caption{使用 \TeX{} Live Shell 安装 ElegantBook 模板}
-\end{figure}
-
+这表明gcd=2。下面关键来了，我们想用a,b表示倒数第二行$6=1*4+2$的那个2，就从第一行表示a,b回代，如表\ref{tab:欧几里得回代法示例}：
 
 \begin{table}[!htbp]
-  \centering
-  \caption{捐赠榜}
-    \begin{tabular}{crcc}
-    \toprule
-    捐赠者   & 金额 & 时间 & 渠道 \\
-    \midrule
-    Lerh  & 10 元  & 2019/05/15 & 微信 \\
-    越过地平线 & 10 元    & 2019/05/15 & 微信 \\
-	大熊 &  20 元 & 2019/05/27 & 微信 \\
-	佚名 & 10 元 & 2019/05/30 & 微信\\
-	\href{http://www.latexstudio.net/}{latexstudio.net} & 666 元 & 2019/06/05 & 支付宝\\
-	Cassis & 11 元 & 2019/06/30 & 微信\\
-	佚名 & 10 元 & 2019/07/23 & 微信\\
-    \bottomrule
-    \end{tabular}%
+	\centering
+	\caption{欧几里得回代法示例}
+	\begin{tabular}{cccc}
+		\toprule
+		原式  && & 带入过程  \\
+		\midrule
+		$a=2*b+16$&&  & $16=a-2*b$ \\
+		$b=1*16+6$&& & $6=b-1*16=-a+3b$ \\
+		$16=2*6+4$&& &  $4=16-2*6=3a-8b$ \\
+		$6=1*4+2$ && & $2=6-1*4=-4a+11b$ \\
+		\bottomrule
+	\end{tabular}%
+	\label{tab:欧几里得回代法示例}
 \end{table}%
+	
+于是得到$x=-4, \ y=11$。
+
+\end{example}
+
+{\heiti 这样一行行进行，将陆续得到形如最新余数=a的倍数+b的倍数的等式，最终得到非零余数gcd，就给出了方程的解。}
+
+\begin{note}
+$gcd(a,b)$是否是形如$ax+by$的最小正整数呢？是的。因为$gcd(a,b)<=min(a,b)$。
+\end{note}
+
+\vbox{}
+
+既然一个线性方程$ax+by=gcd(a,b)$总有整数解$x,y$，下面的问题是{\heiti 如何表述线性方程的所有解}。
+
+先考虑$gcd(a,b)=1$的情况(即a,b互质，其他情况可以转换为互质)，假设$x_1,y_1$是方程$ax+by=1$的一个解。
+通过$x_1$加上b的倍数和$y_1$减去a的相同倍数，可得到其他解。即对于任何整数$k$,我们得到新解$(x_{1}+kb,y_{1}-ka)$。（带入即可验证）
+
+\begin{proof}
+	$(x_{1}+kb,y_{1}-ka)$可以给出方程的{\heiti 所有}解。
+	
+	假设$(x_{1},y_{1})$与$(x_{2},y_{2})$是方程ax+by=1的两个解，即$ax_{1}+by_{1}=1$ 且$ ax_{2}+by_{2}=1$ ，我们用$y_{2}$乘以第一个方程，用$y_{1}$乘以第二个方程，再相减消去b，整理后得到$ax_{1}y_{2}-ax_{2}y_{1}=y_{2}-y_{1}$。
+	类似的，用$x_{2}$乘以第一个方程，用$x_{1}$乘以第二个方程，再相减便得到$bx_{2}y_{1}-bx_{1}y_{2}=x_{2}-x_{1}$。
+	令$k=x_{2}y_{1}-x_{1}y_{2}$，则得到$x_{2}=x_{1}+kb \ ,\  y_{2}=y_{1}-ka$。得证。
+\end{proof}
+
+\vbox{}
+
+再考虑$gcd(a,b)>1$的情况，为简便，令$g=gcd(a,b)$，由前面“欧几里得回代法”知方程$ax+by=g$至少有一个解$(x_{1},y_{1})$。
+{\heiti 而$g$整除$a,b$}，故$(x_{1},y_{1})$是简单方程$\frac{a}{g}x+\frac{b}{g}y=1$的解。
+于是由前面证明，通过式子$x_1+k*\frac{b}{g},\ y_1-k*\frac{a}{g}$改变$k$的值可得到其他解。这就完成了对方程ax+by=g解的描述，我们把它概括为下面定理。
+
+
+\begin{theorem}{线性方程定理}{label}
+设$a$与$b$是非零整数，$g=gcd(a,b)$。方程$ax+by=g$总是有一个整数解$(x_{1},y_{1})$（也称贝祖定理），
+它可由前面叙述的欧几里得回带法得到。则方程的每一个解可由$(x_{1}+k*\frac{b}{g},y_{1}-k*\frac{a}{g})$得到，其中$k$可为任意整数。
+\end{theorem}
+
+\vbox{}
+
+现在我们想怎么用代码实现上面说到的回代法。
+
+如果用上面的思路，我们似乎需要事先知道欧几里得的结果，然后根据结果去算系数。
+但是一般用计算机求解gcd，是递归算法，就是说我们需要逆推（上面过程的逆过程），这样才能写出递归代码。
+
+假设当前我们要处理的是求出a 和 b的最大公约数，并要求出 x 和 y 使得 $a * x + b * y=g$。
+而我们已经求出了下一个状态：b 和 a\%b 的最大公约数({\heiti 欧几里得算法核心，a=b,b=a\%b})，并且求出了一组$x_1$ 和$y_1$ 使得：$ b * x_1 + (a\%b) * y_1 = g$。
+那么这两个相邻的状态之间存在一种关系可以求解，我们知道$a\%b = a - (a/b)*b$，那么较末状态(先开始递归计算的)有：
+
+\begin{align*}
+b * x_1 + (a\%b) * y_1 &= g\\
+b*x_{1} + (a-(a/b)*b) * y_{1} &= g \\
+b*x_{1} + a*y_{1}-(a/b)*b*y_{1} &=g\\
+a*y_{1} + b*(x_{1}-a/b*y_{1})&= g
+\end{align*}
+对比较先的状态（后递归到的，需要求的），需要求一组 x 和 y 使得：$a*x + b*y = g$ ，比较对应项系数得到
+\begin{align*}
+x &= y_1\\
+y &= x_1 - a/b * y_1 \\
+\end{align*}
+
+
+这就是递归的关键，我们把它称为{\heiti 拓展欧几里得算法}。之所以叫拓展，是因为它相比欧几里得算法多了一小点，但能解决模线性方程、逆元、同余方程等许多经典问题（后面会介绍）。
+
+递归的终止条件为$b=0$,这时候$x=1,\ y=0,\ a = gcd$。
+
+\lstinputlisting[language=C++, style=codestyle2]{code01/exgcd.cpp}
+
+\vbox{}
+
+\begin{problemset}
+	\item 拓展欧几里得算法的时间复杂度是多少？
+	\item \href{http://poj.org/problem?id=1061}{青蛙的约会}
+	\item \href{https://ac.nowcoder.com/acm/contest/201/C}{Utawarerumono}
+\end{problemset}
+
+
+
+
+
+
+
+
+
+

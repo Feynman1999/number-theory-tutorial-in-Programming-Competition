@@ -13,6 +13,39 @@
 \logo{logo.png}
 \cover{cover.jpg}
 
+\usepackage{xcolor}
+
+
+\colorlet{mygray}{black!30}
+\colorlet{mygreen}{green!60!blue}
+\colorlet{mymauve}{red!60!blue}
+
+\lstdefinestyle{codestyle2}{
+	backgroundcolor=\color{white},  
+	basicstyle=\small\ttfamily,
+	columns=fullflexible,
+	breakatwhitespace=false,      
+	breaklines=true,                
+	captionpos=b,                    
+	commentstyle=\color{mygreen}, 
+	extendedchars=true,              
+	frame=single,                   
+	keepspaces=true,             
+	keywordstyle=\color{blue},      
+	language=c++,                 
+	numbers=left,                
+	numbersep=5pt,                   
+	numberstyle=\small\color{blue}, 
+	rulecolor=\color{mygray},        
+	showspaces=false,
+	showstringspaces=false,               
+	showtabs=false,                 
+	stepnumber=1,                  
+	stringstyle=\color{mymauve},    
+	tabsize=4,                 
+	title=\lstname
+}
+
 \begin{document}
 	
 \maketitle
