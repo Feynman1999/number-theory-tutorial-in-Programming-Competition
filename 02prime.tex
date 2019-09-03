@@ -13,15 +13,34 @@
 \end{definition}
 
 \begin{property}
+	\label{pro:prime}
 	令p是素数，假设p整除乘积ab，则p整除a或p整除b（或者p既整除a也整除b）  
 \end{property}
+
+\begin{theorem}{无穷多素数定理}{label}
+	存在无穷多个素数。
+\end{theorem}
+
+\begin{proof}
+	证明的思路是，假设我们现在有一个素数表，只要说明如何利用这些素数找出新的不在表中的素数，这样迭代下去，就
+表明必有无穷多个素数。设素数表一开始为$p_1,p_2,...,p_n$，令$A = p_1p_2...p_n + 1$，设$q$是某个整除$A$的素数，且设其是
+最小的那个，那么$q$一定不在最初的素数表中，因为如果$q=p_i$，则$q$能整除1，显然错误。于是我们可以无限扩充素数表。
+\end{proof}
+
+\begin{theorem}{素数定理}{label}
+	当x很大时，小于x的素数的个数近似等于$x/ln(x)$，即
+	$$
+	\lim_{x\to\infty} \frac{\pi(x)}{x/ln(x)}=1
+	$$
+	其中$\pi(x)$为素数计数函数，$\pi(x) = \#\{prime\ p:p\le x\}$。
+\end{theorem}
 
 \begin{theorem}{素数整除性质}{label}
 假设素数p整除乘积$a_1a_2...a_r$ ，则p整除$a_1 \quad ,a_2 \quad , ...,\quad a_r$ 中至少一个因数。
 \end{theorem}
 
 \begin{proof}
-	使用上面的性质可以方便的证明该定理。
+	使用上面的\hyperref[pro:prime]{性质}可以方便的证明该定理。
 \end{proof}
 
 \vbox{}
@@ -55,24 +74,135 @@
 \lstinputlisting[language=C++, style=codestyle2]{code02/factor.cpp}
 
 \section{区间素数筛}
+
+这里区间素数筛指的是给定一个上限$n$，要求出区间$[1,n]$中所有的素数。如果采用直接遍历每个数并判断是不是素数的方法，时间复杂度为$O(n^{3\over2})$，若$n>10^6$，则
+不能在$1s$的时间内求解。下面介绍的两种筛法，均使用“筛选”的思想，时间复杂度分别为$O(nlog(logn))$和$O(n)$，在比赛中经常使用。
+
 \subsection{埃氏筛法}
+考虑如果一个数$n$如果是合数(非素数)，那么它一定有小于等于$\sqrt{n}$的质因子，也即$n$是这个质因子的倍数。那么我们可以从小到大($2\sim n$)依次遍历每个数，并存在一些标记记录每个数是否是合数，当遍历到某个数
+时，如果当前数没有被标记为合数(就一定是素数了)，就把当前数的所有倍数标记为合数。代码如下：
+
+\lstinputlisting[language=C++, style=codestyle2]{code02/aishi.cpp}
+
+\begin{remark}
+	代码中有两个关键的地方：
+\begin{itemize}
+	\item 第10行，只有当是素数时，才进行筛选,因为使用合数筛是多余的(该合数的质因子已经筛过了)；
+	\item 第12行，从$i*i$开始筛，因为$(i-1)*i,\ (i-2)*i,\ ...\ 2*i$已经被筛过了。
+\end{itemize}
+\end{remark}
+
+考虑埃氏筛法的时间复杂度，由于每次只考虑素数去筛，即为：
+$$
+	n\sum_{p\le n} \frac{1}{p}\ , \quad p \ is \ prime
+$$
+上式可近似认为是$O(nloglogn)$，感兴趣的可以阅读\href{http://www.wikiwand.com/en/Sieve_of_Eratosthenes#/Algorithm_complexity}{Sieve\_of\_Eratosthenes\#/Algorithm\_complexity} 
+
+\vbox{}
+
+观察埃氏筛法，是否有重复被筛去的合数呢？有的，就是一些质数的较大的公倍数，比如12，当i=2时(从4开始)会筛12;当i=3时(从9开始)还会筛12。
 
 \subsection{欧拉线性筛法}
 
-\subsection{区间数的最大质因子}
+	欧拉筛的思想是{\heiti 保证每个合数都被其最小的质因子筛去}，这样就不会像埃氏筛那样重复筛某个数。
 
+	首先其还是筛选法，考虑用什么筛的：对于每个i，乘以小于i的每个素数，直到能整除就停止，这样能保证每个数只被筛去一次。
+	
+	这个整除停止很关键，假设没有这个break，就会有很多重复。
+	
+	比如$i=6$，取质数3，筛去了18；$i=9$，取质数2，也筛去了18。
+	
+	再比如$i=6$，取质数5，筛去了30；$i=10$，取质数3，筛去了30；$i=15$，取质数2，筛去了30。
+	
+	如果加上break，则筛去18的是9*2，筛去30的是15*2。为什么18不会被6*3筛去？ 因为$6\%2=0$
+	提前break了。即若有一个素数$p|i$,则我用i和后面更大的素数去筛选，不如用p和更大的i去筛选，
+	这样保证了筛掉每个数的是其最小质因子。
+	
+	
+\lstinputlisting[language=C++, style=codestyle2]{code02/euler.cpp}
+
+由于每个数只会被筛去一次，时间复杂度是$O(n)$。
+
+\subsection{区间数的最大、最小质因子}
+上面介绍的埃氏筛法和欧拉筛法经过一点改动就可以用来求区间数的最大质因子和最小质因子。
+
+对于区间最大质因子，稍微增加点埃氏筛的复杂度，从$2*i$而不是$i*i$开始筛：
+
+\lstinputlisting[language=C++, style=codestyle2]{code02/maxprime.cpp}
+
+对于区间最小质因子，只需修改欧拉筛中标记数组即可，时间复杂度不变：
+
+\lstinputlisting[language=C++, style=codestyle2]{code02/minprime.cpp}
 
 
 \section{区间质因数分解}
+这里区间质因数分解指的是给定一个上限$n$，要求出区间$[1,n]$中所有数质因数分解的结果。
+可以用埃氏法先求出所有数的所有质因子；或者使用欧拉法求出区间数的最小质因子再利用区间信息求解。
+\subsection{埃氏法}
+先$O(nlogn)$求出每个数的所有质因子，再$O(nlogn)$直接除求出质因子对应的指数：
+
+\lstinputlisting[language=C++, style=codestyle2]{code02/interaishi.cpp}
+
+\subsection{欧拉法}
+先$O(n)$欧拉筛求出每个数的{\heiti 最小质因子}，再$O(nlogn)$利用区间信息求出对应的指数。
+\lstinputlisting[language=C++, style=codestyle2]{code02/intereuler.cpp}
 
 \section{大区间素数筛与质因数分解}
+大区间指的是咱们考虑的区间不再是$[1,n]$，而是$[L,R]$，这里$R\le 2^{40}, \  R-L<=10^6$。
+
+\subsection{大区间素数筛}
+对于一个合数$n$，一定有小于等于$\sqrt{n}$的质因子，利用这一点，我们依然可以使用埃氏筛的思想。
+先预处理出$[1,\sqrt{R}]$区间内的所有素数，然后拿这些素数去做筛选即可。
+
+时间复杂度为$O(N + llogl)$ ， 其中$N$为$\sqrt{R}$，$R$是区间右端点，即需要预处理的素数范围 ； $l$为区间长度$R-L$。
+
+\lstinputlisting[language=C++, style=codestyle2]{code02/large-inter-prime.cpp}
+
+\subsection{大区间质因数分解}
+和上面类似，先埃筛求出小于等于$\sqrt{R}$的所有质因子，然后对于区间内的每个数直接除即可。
+
+因为一个合数n大于$\sqrt{n}$ 的质因子最多只有1个，因此将已知的质因子全部除尽后，若不为1，就为那个大于$\sqrt{n}$的质因子，对应指数为1。
+
+时间复杂度为$O(N + llogl)$，其中$N$为$\sqrt{R}$，$R$是区间右端点，即需要预处理的素数范围 ； $l$为区间长度$R-L$。
+
+\lstinputlisting[language=C++, style=codestyle2]{code02/large-inter-factor.cpp}
+
 
 \section{梅森素数与完全数}
+梅森素数与完全数在程序设计竞赛中不是很常见，这里简要介绍一下。
+
+\subsection{梅森素数}
+现在我们来研究形如$a^n-1(n\ge2)$的素数。例如31就是这样的数，因为$31 = 2^5 - 1$。
+由于$a-1$始终是$a^n-1$的因子。为啥呢？因为使用几何级求和公式：（展开即可证明该公式）
+$$
+x^n-1=(x-1)(x^{n-1}+x^{n-2}+...+x^2+x+1)
+$$
+所以若$a^n-1$为素数，则a一定等于2。反之显然不成立。
+
+再进一步考虑$n$，假设$n$为合数，即$n=mk$，则$2^n=2^{mk}=(2^m)^k$。使用$x=2^m$的几何级数公式得：
+$$
+2^n - 1 = (2^m)^k - 1 = (2^m-1)((2^m)^{k-1}+(2^m)^{k-2}+...+(2^m)^2+(2^m)+1)
+$$
+这证明了若$n$是合数，则$2^n-1$也是合数。综上有以下命题：
+
+\begin{proposition}{}{label}
+	如果对整数$a\ge2$与$n\ge2$，$a^n-1$是素数，则$a$必等于2且$n$一定是素数。
+\end{proposition}
+
+形如$2^p-1$的素数叫做梅森素数，已知的梅森素数在\href{https://www.mersenne.org/primes/}{https://www.mersenne.org/primes/}中可以找到，
+目前已经找到了51个(截至2019.09.03)。发现更多的梅森素数没有太大的数学意义，数学上更令人感兴趣的是下面的问题，其答案尚未知晓：
+
+\begin{custom}{问题}
+	存在无穷多个梅森素数吗？
+\end{custom}
+
+\subsection{完全数}
 
 
 \vbox{}
 
+
 \begin{problemset}
-	\item 撒旦发射点
-	\item 
+	\item 区间数的最大质因子是否有线性时间的算法？
+	\item 大区间数的最小质因子是否有线性时间的算法？
 \end{problemset}
