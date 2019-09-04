@@ -5,6 +5,7 @@
 	\item 大区间问题
 	\item 梅森素数
 	\item 完全数
+	\item 因数之和函数
 \end{introduction}
 
 \section{质因数分解}
@@ -14,7 +15,7 @@
 
 \begin{property}
 	\label{pro:prime}
-	令p是素数，假设p整除乘积ab，则p整除a或p整除b（或者p既整除a也整除b）  
+	令p是素数，假设p整除乘积ab，则p整除a或p整除b(或者p既整除a也整除b)  
 \end{property}
 
 \begin{theorem}{无穷多素数定理}{label}
@@ -189,7 +190,7 @@ $$
 	如果对整数$a\ge2$与$n\ge2$，$a^n-1$是素数，则$a$必等于2且$n$一定是素数。
 \end{proposition}
 
-形如$2^p-1$的素数叫做梅森素数，已知的梅森素数在\href{https://www.mersenne.org/primes/}{https://www.mersenne.org/primes/}中可以找到，
+形如$2^p-1$的素数叫做{\heiti 梅森素数}，已知的梅森素数在\href{https://www.mersenne.org/primes/}{https://www.mersenne.org/primes/}中可以找到，
 目前已经找到了51个(截至2019.09.03)。发现更多的梅森素数没有太大的数学意义，数学上更令人感兴趣的是下面的问题，其答案尚未知晓：
 
 \begin{custom}{问题}
@@ -198,6 +199,92 @@ $$
 
 \subsection{完全数}
 
+\begin{definition}{完全数}{wanquanshu}
+	完全数是等于其真因数之和的数。真因数指的是小于自己的因数(即除去自己)。
+\end{definition}
+
+
+\begin{theorem}{欧几里得完全数公式}{label}
+	如果$2^p-1$是素数，则$2^{p-1}(2^p-1)$是完全数。
+\end{theorem}
+
+\begin{proof}
+	将$2^{p-1}(2^p-1)$所有真因数直接写出求和即证。
+\end{proof}
+
+这里的$(2^p-1)$不就是梅森素数吗？也就是说只要求得一个梅森素数，就得到一个完全数。
+
+那欧几里得完全数公式是否表示了所有完全数呢？千年之后的欧拉证明了欧几里得完全数公式至少给出了所有{\heiti 偶完全数}，称为欧拉完全数定理。
+
+在介绍和证明欧拉完全数定理之前，我们先来介绍一个函数$\sigma(n)$。
+
+\begin{center}
+	$\sigma(n) = n$的所有因数之和(包括1和n)。
+\end{center}
+
+例如$\sigma(6) = 1 + 2+3+6 = 12$。下面试着写出其一般公式，$\sigma(p) = p+1$，$\sigma(p^k) = 1 + p+p^2+...+p^k = \frac{p^{k+1}-1}{p-1}$。
+
+如果你用程序打个表，也许会发现$\sigma(mn)$时常会等于$\sigma(m)\sigma(n)$，实际上这在$m$和$n$互质时成立。
+
+\begin{theorem}{$\sigma$函数公式}{label}
+	\begin{itemize}
+		\item 如果$p$是素数，$k\ge1$，则$\sigma(p^k) = 1 + p+p^2+...+p^k = \frac{p^{k+1}-1}{p-1}$；
+		\item 如果$gcd(m,n)=1$，则$\sigma(mn) = \sigma(m)\sigma(n)$。
+	\end{itemize} 
+\end{theorem}
+
+$\sigma$函数在程序设计竞赛中也时常出现(或者其类似函数，如因子个数函数)，后面章节还会说到它，现在我们用它来辅助证明欧拉完全数定理。
+
+显然，$\sigma$函数可以和完全数产生联系，如果$\sigma(n)=2n$，则n恰好是完全数。
+
+\begin{theorem}{欧拉完全数定理}{label}
+如果n是偶完全数，则$n$一定是$2^{p-1}(2^p-1)$ 的形式，其中$2^p-1$是梅森素数。
+\end{theorem}
+
+\begin{proof}
+	假设n是偶完全数，n是偶数则说明可将它分解成$n=2^km,\quad k\ge 1 \ \&\ m\ is\ odd$
+	
+	则$\sigma(n)=\sigma(2^km)=\sigma(2^k)\sigma(m)=(2^{k+1}-1)\sigma(m)$。
+	又n是完全数，则$\sigma(n)=2n=2^{k+1}m$。
+	
+	因此可以得到
+	$$
+	2^{k+1}m=(2^{k+1}-1)\sigma(m)
+	$$
+	由上式可知，由于$(2^{k+1}-1)$一定是奇数，所以$2^{k+1}| \sigma(m)$ ,于是设$\sigma(m)=c*2^{k+1}$ ,带入上式有：
+	\begin{align*}
+	2^{k+1}m=(2^{k+1}-1)*c*2^{k+1} \\
+	m=(2^{k+1}-1)*c
+	\end{align*}
+	现在我们有两个式子，$m=(2^{k+1}-1)*c$ 和$\sigma(m)=c*2^{k+1}$。
+	
+	实际上这里c只能等于1，下面我们来证明$c=1$。
+	
+	假设$c>1$，则$m=(2^{k+1}-1)*c$至少被不同的数$1,c,m$所整除，因此有
+	$$
+	\sigma(m)\ge 1+c+m=1+c+(2^{k+1}-1)*c
+	$$
+	显然，这是错误的(会得出$0\ge 1$)，因此$c=1$，所以$m=2^{k+1}-1$  ，  $\sigma(m)=2^{k+1}=m+1$，所以m是素数。
+	
+	现在我们已经证明了，如果n是偶完全数，则
+	$$
+	n=2^k(2^{k+1}-1)\ ,\quad where \ (2^{k+1}-1)\ is \ prime
+	$$
+	由于$2^{k+1}-1$是素数，则$(k+1)$一定是素数，（上节已说明）。令$k+1=p$，则$n=2^{p-1}(2^p-1)$，其中$2^p-1$是梅森素数。
+	
+	欧拉完全数定理证毕。
+\end{proof}
+
+\vbox{}
+
+\begin{custom}{问题}
+	存在奇完全数吗？
+\end{custom}
+
+
+
+
+
 
 \vbox{}
 
@@ -205,4 +292,5 @@ $$
 \begin{problemset}
 	\item 区间数的最大质因子是否有线性时间的算法？
 	\item 大区间数的最小质因子是否有线性时间的算法？
+	\item 试着写出求单点$\sigma(n)$以及区间$[1,n]$所有$\sigma$值的代码。
 \end{problemset}
