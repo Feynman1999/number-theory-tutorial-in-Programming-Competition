@@ -146,6 +146,7 @@ $$
 
 \subsection{欧拉法}
 先$O(n)$欧拉筛求出每个数的{\heiti 最小质因子}，再$O(nlogn)$利用区间信息求出对应的指数。
+区间信息指的是，对于每个数如果我们都知道其最小质因子，则可以先将当前数的最小质因子除完，剩下的数的最小质因子我们还是知道的，于是继续除，直到1为止。
 \lstinputlisting[language=C++, style=codestyle2]{code02/intereuler.cpp}
 
 \section{大区间素数筛与质因数分解}

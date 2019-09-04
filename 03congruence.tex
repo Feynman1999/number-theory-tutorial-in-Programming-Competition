@@ -1,113 +1,253 @@
-\chapter{ElegantBook 写作示例}
+\chapter{同余}
 
 \begin{introduction}
-\item 积分定义~\ref{def:int}
-\item Fubini 定理~\ref{thm:fubi}
-\item 最优性原理~\ref{pro:max}
-\item 柯西列性质~\ref{property:cauchy}
-\item 韦达定理
+\item 同余方程
+\item 快速乘、快速幂
+\item 逆元、线性求区间逆元
+\item 中国剩余定理
+\item 欧拉降幂
+\item 卡米歇尔数
+\item Miller\_Rabin
+\item Pollard\_Rho
+\item 离散对数
+\item 原根
 \end{introduction}
 
-\section{Lebesgue 积分}
-在前面各章做了必要的准备后，本章开始介绍新的积分。在 Lebesgue 测度理论的基础上建立了 Lebesgue 积分，其被积函数和积分域更一般，可以对有界函数和无界函数统一处理。正是由于 Lebesgue 积分的这些特点，使得 Lebesgue 积分比 Riemann 积分具有在更一般条件下的极限定理和累次积分交换积分顺序的定理，这使得 Lebesgue 积分不仅在理论上更完善，而且在计算上更灵活有效。
 
-Lebesgue 积分有几种不同的定义方式。我们将采用逐步定义非负简单函数，非负可测函数和一般可测函数积分的方式。
+\section{同余式与同余方程}
+\subsection{同余式}
+整除性是很好的性质，这在最大公因数、模线性方程和素数分解中均得到了体现。而同余式提供了一种
+描述整除性质的简便方式。
 
-由于现代数学的许多分支如概率论、泛函分析、调和分析等常常用到一般空间上的测度与积分理论，在本章最后一节将介绍一般的测度空间上的积分。
-
-\subsection{积分的定义}
-
-我们将通过三个步骤定义可测函数的积分。首先定义非负简单函数的积分。以下设 $E$ 是 $\mathcal{R}^n$ 中的可测集。
-
-\begin{definition}{可积性}{int}
-设 $ f(x)=\sum\limits_{i=1}^{k} a_i \chi_{A_i}(x)$ 是 $E$ 上的非负简单函数，其中 $\{A_1,A_2,\ldots,A_k\}$ 是 $E$ 上的一个可测分割，$a_1,a_2,\ldots,a_k$ 是非负实数。定义 $f$ 在 $E$ 上的积分为 $\int_{a}^b f(x)$
-\begin{equation}
-   \label{inter}
-   \int_{E} f dx = \sum_{i=1}^k a_i m(A_i) \pi \alpha\beta\sigma\gamma\nu\xi\epsilon\varepsilon. \oint_{a}^b\ointop_{a}^b\prod_{i=1}^n
-\end{equation}
-一般情况下 $0 \leq \int_{E} f dx \leq \infty$。若 $\int_{E} f dx < \infty$，则称 $f$ 在 $E$ 上可积。
+\begin{definition}{同余}{label}
+	如果$m|(a-b)$，我们就说a与b模m同余并记之为$a\equiv b(mod\ m)$。
+	
+	特别地，$a\equiv a\%m(mod\ m)$ 。
 \end{definition}
 
+数m叫做同余式的模。 具有相同模的同余式在许多方面表现得很像通常的等式。例如：
 
-一个自然的问题是，Lebesgue 积分与我们所熟悉的 Riemann 积分有什么联系和区别？在 4.4 在我们将详细讨论 Riemann 积分与 Lebesgue 积分的关系。这里只看一个简单的例子。设 $D(x)$ 是区间 $[0,1]$ 上的 Dirichlet 函数。即 $D(x)=\chi_{Q_0}(x)$，其中 $Q_0$ 表示 $[0,1]$ 中的有理数的全体。根据非负简单函数积分的定义，$D(x)$ 在 $[0,1]$ 上的 Lebesgue 积分为
-\begin{equation}
-   \label{inter2}
-   \int_0^1 D(x)dx = \int_0^1 \chi_{Q_0} (x) dx = m(Q_0) = 0
-\end{equation}
-即 $D(x)$ 在 $[0,1]$ 上是 Lebesgue 可积的并且积分值为零。但 $D(x)$ 在 $[0,1]$ 上不是 Riemann 可积的。
+若$a_1\equiv b_1(mod\ m) \ ,\quad a_2\equiv b_2(mod\ m)$     则$a_1\pm a_2\equiv b_1\pm b_2(mod \ m)$ ，$a_1a_2\equiv b_1b_2(mod \ m)$ 
+
+{\heiti 但 $ac\equiv bc(mod \ m)$ 时，未必有$a\equiv b(mod \ m)$，只有$gcd(c,m)=1$，才可以消去c。}
 
 
+\subsection{同余方程}
+如果同余式含有未知数，我们考虑如何求解。
 
-有界变差函数是与单调函数有密切联系的一类函数。有界变差函数可以表示为两个单调递增函数之差。与单调函数一样，有界变差函数几乎处处可导。与单调函数不同，有界变差函数类对线性运算是封闭的，它们构成一线空间。练习题 \ref{exer:43} 是一个性质的证明。
+首先考虑“穷举法” ，要解模m同余式，可让每个变量试取0,1,2...,m-1。例如，解同余式$x^2+2x-1\equiv 0(mod\ 7)$，
+就去试$x=0\quad, x=1\quad,...\quad,x=6$，这样可以求出两个解$x\equiv 2(mod\ 7)$和$x\equiv 3(mod\ 7)$ 当然还有其他解，但新的解与2或3是同余的，如9和10。当我们说“求同余式的所有解时”，是指求所有不同余的解，即相互不同余的所有解。
 
-\begin{exercise}\label{exer:43}
-设 $f \notin\in L(\mathcal{R}^1)$，$g$ 是 $\mathcal{R}^1$ 上的有界可测函数。证明函数
-\begin{equation}
-   \label{ex:1}
-   I(t) = \int_{\mathcal{R}^1} f(x+t)g(x)dx \quad t \in \mathcal{R}^1
-\end{equation}
-是 $\mathcal{R}^1$ 上的连续函数。
-\end{exercise}
+许多同余式是没有解的，如$x^2\equiv 3(mod\ 10)$。
 
-\begin{problem}
-即 $D(x)$ 在 $[0,1]$ 上是 Lebesgue 可积的并且积分值为零。但 $D(x)$ 在 $[0,1]$ 上不是 Riemann 可积的。
-\end{problem}
+\vbox{}
 
+下面考虑如何求解同余式$ax\equiv c(mod\ m)$。 
 \begin{example}
-即 $D(x)$ 在 $[0,1]$ 上是 Lebesgue 可积的并且积分值为零。但 $D(x)$ 在 $[0,1]$ 上不是 Riemann 可积的。
+解同余式$18x\equiv8(mod\ 22)$
 \end{example}
 
-\begin{proof}
-测试证明环境
-\end{proof}
+等价于求$22\ |\ (18x-8)$，即求$18x-22y=8$。       
 
-\begin{solution}
-即 $D(x)$ 在 $[0,1]$ 上是 Lebesgue 可积的并且积分值为零。但 $D(x)$ 在 $[0,1]$ 上不是 Riemann 可积的。
-\end{solution}
+解这类方程的问题在第一章中研究过。
 
-\begin{theorem}{Fubini 定理}{fubi} 
-（1）若 $f(x,y)$ 是 $\mathcal{R}^p\times\mathcal{R}^q$ 上的非负可测函数，则对几乎处处的 $x\in \mathcal{R}^p$，$f(x,y)$ 作为 $y$ 的函数是 $\mathcal{R}^q$ 上的非负可测函数，$g(x)=\int_{\mathcal{R}^q}f(x,y) dy$ 是 $\mathcal{R}^p$ 上的非负可测函数。并且
-\begin{equation}
-   \label{eq:461}
-   \int_{\mathcal{R}^p\times\mathcal{R}^q} f(x,y) dxdy=\int_{\mathcal{R}^p}\left(\int_{\mathcal{R}^q}f(x,y)dy\right)dx.
-\end{equation}
-（2）若 $f(x,y)$ 是 $\mathcal{R}^p\times\mathcal{R}^q$ 上的可积函数，则对几乎处处的 $x\in\mathcal{R}^p$，$f(x,y)$ 作为 $y$ 的函数是 $\mathcal{R}^q$ 上的可积函数，并且 $g(x)=\int_{\mathcal{R}^q}f(x,y) dy$ 是 $\mathcal{R}^p$ 上的可积函数。而且~\ref{eq:461} 成立。
+对于$ax\equiv c(mod\ m)$ ，其有解{\heiti 当且仅当}线性方程$ax-my=c$ 有解。
+
+
+由前可知，线性方程$ax-my=c$ 有解的充分必要条件是$gcd(a,m)\ |\ c$。
+
+且方程$au+mv=g$ 一定有解 ，设一个解为$(u_0,v_0)$，则有
+$$
+a\frac{cu_0}{g}+m\frac{cv_0}{g}=c
+$$
+这说明$x_0= \frac{cu_0}{g}$是同余式$ax\equiv c(mod\ m)$ 的一个解，通解为$x=x_0+k\cdot \frac{m}{g}$。
+
+{\heiti 由于相差m的倍数的任何两个解认为是相同的}，所有恰好有$g$个不同的解，这些解通过取$k=0,1,2...,g-1$而得到。将上述过程概述为定理：
+
+
+\begin{theorem}{线性同余式定理$ax\equiv c(mod\ m)$}{label}
+设a,c与m是整数，m>=1,且设$g=gcd(a,m)$。 
+
+(a)  如果$g\nmid c$，则同余式$ax\equiv c(mod\ m)$ 没有解
+
+(b)  如果$g\ |\ c$ ，则同余式$ax\equiv c(mod\ m)$ 恰好有g个不同的解。要求这些解，首先求线性方程$au+mv=g$ 的一个解$(u_0,v_0)$ 
+{\heiti (欧几里得回带法，在计算机上递归求得，称为扩展欧几里得算法)} 。则$x_0=(\frac{cu_0}{g}\% \frac{m}{g} + \frac{m}{g}) \% \frac{m}{g}$是$ax\equiv c(mod\ m)$ 的解，不同余解的完全集由
+$$
+x\equiv x_0+k\cdot \frac{m}{g} \  (mod\ m),\quad k=0,1,2,...,g-1
+$$
+给出。
 \end{theorem}
 
-\begin{note}
-在本模板中，引理（lemma），推论（corollary）的样式和定理~\ref{thm:fubi} 的样式一致，包括颜色，仅仅只有计数器的设置不一样。
-\end{note}
 
-我们说一个实变或者复变量的实值或者复值函数是在区间上平方可积的，如果其绝对值的平方在该区间上的积分是有限的。所有在勒贝格积分意义下平方可积的可测函数构成一个希尔伯特空间，也就是所谓的 $L^2$ 空间，几乎处处相等的函数归为同一等价类。形式上，$L^2$ 是平方可积函数的空间和几乎处处为 0 的函数空间的商空间。
+例如，同余式$943x\equiv 381(mod\ 2576)$ 无解，这是因为$gcd(943,2576) \nmid 381$。
 
-\begin{proposition}{最优性原理}{max}
-如果 $u^*$ 在 $[s,T]$ 上为最优解，则 $u^*$ 在 $[s, T]$ 任意子区间都是最优解，假设区间为 $[t_0, t_1]$ 的最优解为 $u^*$ ，则 $u(t_0)=u^{*}(t_0)$，即初始条件必须还是在 $u^*$ 上。
-\end{proposition}
+另一方面，同余式$893x\equiv 266(mod\ 2432) $
+有19个解，因为$gcd(893,2432)=19,\  19|266$     这个19即为不同余解的个数。
 
-我们知道最小二乘法可以用来处理一组数据，可以从一组测定的数据中寻求变量之间的依赖关系，这种函数关系称为经验公式。本课题将介绍最小二乘法的精确定义及如何寻求点与点之间近似成线性关系时的经验公式。假定实验测得变量之间的 $n$ 个数据，则在平面上，可以得到 $n$ 个点，这种图形称为 “散点图”，从图中可以粗略看出这些点大致散落在某直线近旁, 我们认为其近似为一线性函数，下面介绍求解步骤。
+下面解方程$893u-2432v=19$ ，使用欧几里得回带法可以求得解$(u,v)=(79,29)$ ，乘以266/19=14得方程$893x-2432y=266$的解$(x,y)=(1106,406)$ ，
+即1106是同余式方程的一个解，这样的互不同余的解共有19个。1106加上2432/19=128的倍数(\%2432)就可得到完全解集。
 
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.6\textwidth]{scatter.pdf}
-	\caption{散点图示例 $\hat{y}=a+bx$ \label{fig:scatter}}
-\end{figure}
 
-以最简单的一元线性模型来解释最小二乘法。什么是一元线性模型呢？监督学习中，如果预测的变量是离散的，我们称其为分类（如决策树，支持向量机等），如果预测的变量是连续的，我们称其为回归。回归分析中，如果只包括一个自变量和一个因变量，且二者的关系可用一条直线近似表示，这种回归分析称为一元线性回归分析。如果回归分析中包括两个或两个以上的自变量，且因变量和自变量之间是线性关系，则称为多元线性回归分析。对于二维空间线性是一条直线；对于三维空间线性是一个平面，对于多维空间线性是一个超平面。
+\begin{remark}
+	线性同余式定理最重要的情形是$gcd(a,m)=1$ ，在这种情形下，同余式恰好有一个解。
+\end{remark}
 
-\begin{property}\label{property:cauchy}
-柯西列的性质
-\begin{enumerate}
-\item $\{x_k\}$ 是柯西列，则其子列 $\{x_k^i\}$ 也是柯西列。
-\item $x_k\in \mathcal{R}^n$，$\rho(x,y)$ 是欧几里得空间，则柯西列收敛，$(\mathcal{R}^n,\rho)$ 空间是完备的。
-\end{enumerate}
-\end{property}
+\lstinputlisting[language=C++, style=codestyle2]{code03/modequation.cpp}
 
-\begin{conclusion}
-回归分析（regression analysis) 是确定两种或两种以上变量间相互依赖的定量关系的一种统计分析方法。运用十分广泛，回归分析按照涉及的变量的多少，分为一元回归和多元回归分析；按照因变量的多少，可分为简单回归分析和多重回归分析；按照自变量和因变量之间的关系类型，可分为线性回归分析和非线性回归分析。
-\end{conclusion}
+\vbox{}
+
+对于非线性的同余式，其解“不是很确定”。
+
+我们熟悉的是对于{\heiti 一个d次实系数多项式的实根不超过d个} ，这个结论对于同余式并不成立。
+
+例如$x^2+x\equiv 0(mod\ 6)$ 有4个模6不同的根：0,2,3,5 
+
+但是，{\heiti 当p为素数时，这个结论依然成立:}
+
+\begin{theorem}{模p多项式根定理}{label}
+设p为素数，$f(x)=a_0x^d+a_1x^{d-1}+...+a_d$ 是次数为d>=1的整系数多项式，且p不整除$a_0$ ，则同余式$f(x)\equiv 0(mod\ p)$ 最多有d个模p不同余的解。
+\end{theorem}
+
+\section{快速乘与快速幂}
+快速乘和快速幂作为工具经常在程序设计竞赛中遇见。
+\subsection{快速乘}
+在$C++$中，变量最多只能表示到$2^{64}-1$这么大，所以如果我们要计算$a*b\%c$，而$a,b$都是接近表示上限的数，这个时候就需要快速乘。
+即将$b$按二进制位分解分别加上，时间复杂度为$O(log(b))$。
+\lstinputlisting[language=C++, style=codestyle2]{code03/fastmul.cpp}
+
+
+\subsection{快速幂}
+现在我们要计算$a^b\%c$，如果乘$b$次，时间复杂度太高，考虑将$b$按照二进制分解，每一位分别计算并乘在一起即可。
+时间复杂度为$O(log(b))$。相比于快速乘，只是加法变了乘法。
+\lstinputlisting[language=C++, style=codestyle2]{code03/fastexp.cpp}
+
+
+\section{费马小定理与逆元}
+前面我们讨论了关于同余式、同余方程的一些性质，小结一下，互质这个条件很重要。
+
+\begin{itemize}
+	\item 对于$ac\equiv bc(mod \ m)$，如果$gcd(c,m)=1$，则可以消去c，得到$a\equiv b(mod \ m)$ 。
+	\item 对于同余方程 $ax\equiv c(mod\ m)$，若$gcd(a,m)=1$ ，同余式恰好有一个解。
+\end{itemize}
+
+{\heiti 对于式子$ax\equiv c(mod\ m)$，令$c=1$，得$ax\equiv 1(mod\ m)$，若$gcd(a,m)=1$，则方程有唯一解$x_0$，
+我们称$x_0$为$a$在模$m$意义下的逆元，常记作$a^{-1}$。}
+
+逆元可以用来说明一些事情，比如如果$ac\equiv bc(mod\ m)$，若$gcd(c,m)=1$，
+则存在$c^{-1}$使得$cc^{-1}\equiv 1 (mod\ m)$。所以可以对$ac\equiv bc(mod\ m)$两边同时乘以$c^{-1}$，得到$a\equiv b(mod\ m)$。
+
+如何求解逆元呢？拓展欧几里得即可，因为就是一个同余方程：
+\lstinputlisting[language=C++, style=codestyle2]{code03/inverse.cpp}
+
+\vbox{}
+
+若模数是素数，我们还可以用费马小定理求解。
+
+\begin{theorem}{费马小定理}{femat}
+	设p是素数，a是任意整数且$p\nmid a$ ，则 $a^{p-1}\equiv 1(mod\ p)$。 
+\end{theorem}
+
+在证明费马小定理之前，先来看一个引理。
+
+\begin{lemma}{为证明费马小定理做准备}{forfemat}
+	设$p$是素数，a是任何整数且 $p\nmid a$ 则数
+	$$
+	a,2a,3a,...,(p-1)a\qquad (modp)
+	$$
+	与数
+	$$
+	1,2,3,...,(p-1)\qquad (modp)
+	$$
+	相同，尽管它们的次序不同。
+\end{lemma}
+
+\begin{proof}
+	数列$a,2a,3a,...,(p-1)a$，包含$p-1$个数，显然没有一个数被$p$整除 ，假设从中取出两个数ja和ka是关于p同余的，即$p|(j-k)a$，
+	又p是素数且p不整除a，所以p整除$(j-k)$。但是$|j-k|<p-1 $，所以$j-k=0$，即$j=k$。
+	
+	这表明，这p-1个数模p不同，由于任何数mod p仅有$p-1$个不同的非零值，证毕。
+\end{proof}
+
+\begin{proof}
+	费马小定理的证明。
+	
+	利用该引理\ref{lem:forfemat}，即可完成对费马小定理\ref{thm:femat}的证明，将上面引理列到的两组数相乘，可得到
+	$$
+	a^{p-1} \cdot (p-1)!\equiv (p-1)!   \qquad (modp)
+	$$
+	由于$(p-1)!$与p互质（显然除了1没有其它公共因子了），可以消去它(本节开头有提到这个性质)，则$a^{p-1}\equiv 1(mod\ p)$。
+\end{proof}
+
+\vbox{}
+
+有了费马小定理，若模数$m$是质数，则数$a$关于$m$的逆元就是$a^{m-2}$，因为$a* a^{m-2} \equiv 1 \ (mod p)$。
+使用快速幂直接计算即可。
+
+\vbox{}
+
+{\heiti 使用费马小定理还可以进行素数测试}，后面小节会提到。
+
+\section{中国剩余定理}
+
+\begin{theorem}{中国剩余定理}{CRT}
+	设m与n是整数，$gcd(m,n)=1$，b与c是任意整数,则同余式组
+	$x\equiv b(mod\ m)$与$x\equiv c(mod\ n)$恰有一个解$0\leqslant x<mn$。
+\end{theorem}
+
+\begin{proof}
+	对于第一个同余式$x\equiv b(mod\ m)$，其解由形如$x = my +b$的所有数组成。将其带入第二个方程可得
+	$my\equiv c-b (mod\ n)$，已知$gcd(m,n)=1$，由线性同余式定理知其恰有一个解$y_1,\ 0\le y_1<n$，则$x_1=my_1+b$
+	给出了原来同余式组的解，这是在$[0,mn)$之间的唯一解。
+\end{proof}
+
+\vbox{}
+
+上面只考虑了两个同余式，如果有多个呢？
+
+\begin{custom}{问题}
+	求出方程组$x\equiv a_i(mod \ m_i) (0 \leqslant i <n) $ 的解$x$，其中$m_0,m_1,m_2,m_3...m_{n-1}$ 两两互质。
+\end{custom}
+
+\begin{solution}
+	令$M_i=\prod_{j\neq i}m_j$     则有$(M_i,m_i)=1$   
+	
+	故存在$p_i,q_i$ ，使得$M_i*p_i+m_i*q_i=1$ 
+	
+	令  $e_i=M_ip_i$，\quad    $p_i$即为$M_i$ 模$m_i$下的逆元。   
+	
+	则有
+$$
+e_i\equiv\left\{\begin{matrix}
+0(mod\ m_j),j\neq i\\ 
+1(mod\ m_j),j=i
+\end{matrix}\right.	
+$$	
+	故$e_0a_0+e_1a_1+e_2a_2+...+e_{n-1}a_{n-1}$是方程的一个解。
+	
+	由中国剩余定理知，$[0\sim\prod_{i=0}^{n-1}m_i\}$ 中必有一解，将上式模$\prod_{i=0}^{n-1}m_i$即可。 
+\end{solution}
+
+时间复杂度  $O(nlogm)$，$n$个方程。
+
+\lstinputlisting[language=C++, style=codestyle2]{code03/crt.cpp}
+
+\section{欧拉公式与欧拉降幂}
+
+
+\section{素性测试}
+
+
+\section{Pollard\_Rho质因数分解}
+
+
+\section{离散对数}
+
+
+\section{原根}
+
+
+
 
 \begin{problemset}
-\item 设 $A$ 为数域 $K$ 上的 $n$ 级矩阵。证明：如果 $K^n$ 中任意非零列向量都是 $A$ 的特征向量，则 $A$ 一定是数量矩阵。
-\item 证明：不为零矩阵的幂零矩阵不能对角化。
-\item 设 $A = (a_{ij})$ 是数域 $K$ 上的一个 $n$ 级上三角矩阵，证明：如果 $a_{11} = a_{22} = \cdots = a_{nn}$，并且至少有一个 $a_{kl} \not = 0 (k < l)$，则 $A$ 一定不能对角化。
+	\item xx
 \end{problemset}
