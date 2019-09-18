@@ -100,7 +100,7 @@ $$
 
 我们熟悉的是对于{\heiti 一个d次实系数多项式的实根不超过d个} ，这个结论对于同余式并不成立。
 
-例如$x^2+x\equiv 0(mod\ 6)$ 有4个模6不同的根：0,2,3,5 
+例如$x^2+x\equiv 0(mod\ 6)$ 有4个模6不同的根：0,2,3,5。
 
 但是，{\heiti 当p为素数时，这个结论依然成立:}
 
@@ -114,6 +114,9 @@ $$
 在$C++$中，变量最多只能表示到$2^{64}-1$这么大，所以如果我们要计算$a*b\%c$，而$a,b$都是接近表示上限的数，这个时候就需要快速乘。
 即将$b$按二进制位分解分别加上，时间复杂度为$O(log(b))$。
 \lstinputlisting[language=C++, style=codestyle2]{code03/fastmul.cpp}
+
+\subsection{$O(1)$快速乘}
+
 
 
 \subsection{快速幂}
@@ -205,7 +208,7 @@ $$
 上面只考虑了两个同余式，如果有多个呢？
 
 \begin{custom}{问题}
-	求出方程组$x\equiv a_i(mod \ m_i) (0 \leqslant i <n) $ 的解$x$，其中$m_0,m_1,m_2,m_3...m_{n-1}$ 两两互质。
+	求出方程组$x\equiv a_i(mod \ m_i) (0 \leqslant i <n) $ 的解$x$，其中$m_0,m_1,m_2,m_3,...,m_{n-1}$ 两两互质。
 \end{custom}
 
 \begin{solution}
@@ -218,8 +221,8 @@ $$
 	则有
 $$
 e_i\equiv\left\{\begin{matrix}
-0(mod\ m_j),j\neq i\\ 
-1(mod\ m_j),j=i
+0(mod\ m_j)\ ,\ j\neq i\\ 
+1(mod\ m_j)\ ,\ j=i
 \end{matrix}\right.	
 $$	
 	故$e_0a_0+e_1a_1+e_2a_2+...+e_{n-1}a_{n-1}$是方程的一个解。
@@ -227,11 +230,205 @@ $$
 	由中国剩余定理知，$[0\sim\prod_{i=0}^{n-1}m_i\}$ 中必有一解，将上式模$\prod_{i=0}^{n-1}m_i$即可。 
 \end{solution}
 
-时间复杂度  $O(nlogm)$，$n$个方程。
+时间复杂度  $O(nlogm)$，其中$n$表示有$n$个方程。
 
 \lstinputlisting[language=C++, style=codestyle2]{code03/crt.cpp}
 
+\begin{custom}{问题}
+	如果这些方程的{\heiti 模数不互质}呢？（上面互质的方法只是一种巧妙的构造）
+\end{custom}
+
+一样可以求解，每一次我们将两个方程合并为一个方程，具体来说，假设目前的前两个方程为$x\equiv a_1 \ (mod\ m_1),\quad  x\equiv a_2 \ (mod\ m_2)$。
+将第一个带入第二个可得到$km_1\equiv a_2-a_1 \ (mod\ m_2)$，解这个同余方程，求出$k$的最小正整数解$k_0$，那么$k = \frac{m_2}{gcd}y+ k_0$，带入
+$x=km_1+a_1$中可以得到$x=\frac{m_1m_2}{gcd}y+m_1k_0+a_1$，也即将前两个方程合并为了一个：$x\equiv m_1k_0+a_1\ (mod\ \frac{m_1m_2}{gcd})$，
+这样迭代下去，最后的那个方程即为所求。
+
+时间复杂度为$nlogm$，其中$n$是方程个数。{\heiti 代码中的$x_0$即为上面的$k_0$。}
+
+\lstinputlisting[language=C++, style=codestyle2]{code03/excrt.cpp}
+
 \section{欧拉公式与欧拉降幂}
+
+\subsection{欧拉公式}
+
+费马小定理很漂亮$a^{p-1}\equiv 1(mod\ p)$，但限制$p$是素数且$p\nmid a$。如果$p$是合数，即使$a,p$互质，结论也不正确了。
+那是否有$a^{???}\equiv 1(mod\ m)$成立的指数呢？带规律的那种。
+首先，如果a的某个幂模m余1，则a和m必互质(可由线性方程定理证明)。
+
+这再次提醒我们观察与m互素的数的集合：
+$$
+{a:1\leqslant a\leqslant m,\quad gcd(a,m)=1}
+$$
+{\heiti 在1$\sim$m之间与m互质的整数个数}是个重要的量，我们赋予这个量一个名称：
+
+
+\begin{definition}{欧拉函数$\varphi$}{label}
+$$
+\varphi(m)=\{a:1\leqslant a\leqslant m,\quad gcd(a,m)=1\}
+$$
+\end{definition}
+
+注意p是素数时，每个整数$1\leqslant a<p$ 都与p互素，所以对于素数p有公式
+$$
+\varphi(p)=p-1
+$$
+我们设法模仿费马小定理的证明。例如，假设要求7的幂次模10余1，不取所有1$\sim$9，而是恰好取与10互素的数，它们是
+$$
+1,3,7,9
+$$
+如果用7去乘每个数可得
+$$
+7\cdot 1\equiv 7(mod\ 10)\quad 7\cdot 3\equiv 1(mod\ 10)\quad
+7\cdot 7\equiv 9(mod\ 10)\quad 7\cdot9\equiv 3(mod\ 10)
+$$
+{\heiti 得到的4个数是之前的4个数的重排！}如果将它们乘起来就得到相同的乘积
+\begin{align*}
+(7\cdot 1)(7\cdot 3)(7\cdot7)(7\cdot9)\equiv 1\cdot3\cdot7\cdot9  \qquad  (mod\ 10)  \\
+7^4(1\cdot3\cdot7\cdot9)\equiv 1\cdot3\cdot7\cdot9 \qquad (mod\ 10)
+\end{align*}
+
+由于$1\cdot3\cdot7\cdot9$与$10$是互质的，因此可以消去，所以得到$7^4\equiv 1(mod\ 10)$，这个形式和费马小定理很像了！
+
+考虑这里的指数4和费马小定理中的$p-1$的共同点， 都是1$\sim$m中与m互质的数的个数，即欧拉函数$\varphi(m)$。
+
+
+\begin{theorem}{欧拉公式}{eulerf}
+如果$gcd(a,m)=1$ ，则
+$$
+a^{\varphi(m)}\equiv 1 (mod\ m)
+$$
+\end{theorem}
+
+\begin{lemma}{为证明欧拉公式做准备}{foreulerf}
+如果$gcd(a,m)=1$，则数列
+$$
+b_1a,\ b_2a,\ b_3a,\ ...\ ,b_{\varphi(m)}a  \qquad  (mod\ m)
+$$
+与数列
+$$
+b_1,\ b_2,\ b_3,\ ...\ ,b_{\varphi(m)} \qquad (mod\ m)
+$$
+相同，尽管它们可能次序不同，$b_i$表示小于$m$且与$m$互质的数。
+\end{lemma}
+
+\begin{proof}
+引理的证明。
+\begin{itemize}
+	\item 注意到$b_i$和a均与m是互质的，则$b_ia$也与m互质。{\heiti 又因为所有与m互质的数\%m后依然与m互质} 
+	(如果x-km与m不互质，则x与m也不互质了)，所以数列$b_1a,b_2a,b_3a,...,b_{\varphi(m)}a  \quad  (mod\ m)$ 同
+	余于数列$b_1,b_2,b_3,...,b_{\varphi(m)} \quad (mod\ m)$ 中的某一个数(因为就这$\varphi(m)$个和$m$互质)。又
+	每个数列有$\varphi(m)$个数 ，因此，如果能进一步证明第一个数列中的数对于模m互不相同，就可得出两个数列(重排后)
+	相同。  
+	\item 从第一个数列中任选两个数，假设它们是同余的，那么意味着$m\ |\ a(b_i-b_j)$，由于a,m是互质的，因而
+	有$m|b_i-b_j$，又 $b_i ,b_j$在1与m之间，这说明$b_i=b_j$，即第一个数列中的数模m是不同的。引理证毕。
+\end{itemize}
+\end{proof}
+
+
+\begin{proof}
+欧拉公式的证明。
+
+利用该引理\ref{lem:foreulerf}，即可完成对\ref{thm:eulerf}欧拉公式的证明，
+由引理知第一个数列中数的乘积等于第二个数列中数的乘积：
+$$
+(b_1a)\cdot (b_2a)\cdot (b_3a)\cdot \ ...\ \cdot (b_{\varphi(m)}a) \equiv b_1\cdot b_2\cdot b_3 \cdot \cdot \cdot b_{\varphi(m)} \qquad  (mod\ m)
+$$
+左边提出$\varphi(m)$个a得到  $a^{\varphi(m)}B\equiv B (mod\ m)$，其中$B= b_1 b_2 b_3 \cdot \cdot \cdot b_{\varphi(m)} $。
+
+由于每个$b$与m都是互质的，因此$B$与m也是互质的，因此B可以消去，于是得到
+$$
+a^{\varphi(m)}\equiv 1 (mod\ m)
+$$
+证毕。
+\end{proof}
+
+关于欧拉函数$\phi$，后面还会遇到。下一节让我们先看一下欧拉公式的一个应用。
+
+\subsection{欧拉降幂}
+如何计算$5^{100000000000000}mod\ 12830603$? (实际上会有很多零，比如$10^5$个，这里为了说明问题简写)
+
+如果12830603是素数，则直接使用费马小定理，可以将指数除以p-1，将余数作为幂计算即可。
+
+但12830603=3571*3593，不是素数。
+
+但但，$gcd(5,12830603)=1$，因此由欧拉公式知$5^{\varphi(12830603)}\equiv 1 (mod \ 12830603)$。
+计算得到$\varphi(12830603)=12823440$，因此只要把100..000除以12823440的余数作为指数即可。{\heiti 注意这里要求5和12830603互质}。
+
+{\heiti 如果底数和模数不互质呢?有广义欧拉降幂公式}，总结如下：
+
+\begin{theorem}{广义欧拉降幂公式}{label}
+	\begin{align*}
+	a^b\equiv  \left\{\begin{matrix}
+	a^{b\% \phi(p)}&  \quad gcd(a,p)=1 \\
+	a^b   \quad  & gcd(a,p)\neq 1,b\le \phi(p) \\
+	a^{b\% \phi(p)+\phi(p)} &\quad   gcd(a,p)\neq 1,b>\phi(p)
+	\end{matrix}\right. \quad {mod \ p}
+	\end{align*}
+\end{theorem}
+
+
+\begin{proof}
+	第一行和第二行的式子之前已经说明，下面证明$b>\phi(p)$的情况。
+	
+	设$b = A*\phi(p) + C$，其中$A\ge1,\ 0\le C<\phi(p)$。
+	
+	那么我们要证明的就是$a^{ A*\phi(p) + C} \equiv  a^{\phi(p)+C}(\ mod\ p)$。
+	
+	如果我们能证明$a^{A*\phi(p)} \equiv a^{\phi(p)}( mod\ p)$，则上式也就成立。
+	
+	即证$a^{2*\phi(p)} \equiv a^{\phi(p)}( mod\ p)$，移项即证
+	
+	$$p\ |\  a^{\phi(p)}(a^{\phi(p)}-1)$$
+	
+	(这里p不一定是素数)
+	
+	假设
+	$$
+	(\frac{p}{(p\ ,\ a^{\phi(p)})}\ ,\ a)= 1
+	$$
+	
+	那么根据欧拉定理，
+	$$
+	a^{\phi(p)} = a^{k*\phi(\frac{p}{ {(p,a^{\phi(p)})}})}\equiv {[a^{\phi(\frac{p}{ {(p,a^{\phi(p)})}})}]}^k \equiv 1 \ ,\quad mod\ (\frac{p}{(p,a^{\phi(p)})})
+	$$
+	其中$k\ge 1$，移项可得$\frac{p}{(p,a^{\phi(p)})}\ |\ (a^{\phi(p) }- 1)$。
+	两边同时乘${(p,a^{\phi(p)})}$可得$p\ |\  {(p,a^{\phi(p)})}*(a^{\phi(p)}-1)$，于是也就证明了$p\ |\  a^{\phi(p)}(a^{\phi(p)}-1)$。证毕。
+	
+	但上面的假设还没有证明，实际上这个假设是一定成立的，下面证明。
+	
+	对$a$和$p$进行质因数分解，
+	$$
+		a = p^{a_1}_1*p^{a_2}_2*....*p^{a_{t_1}}_{t_1} * q^{b_1}_1* q^{b_2}_2*...* q^{b_{t_2}}_{t_2}
+	$$
+	
+	$$
+		p = p^{c_1}_1*p^{c_2}_2*....*p^{c_{t_1}}_{t_1} *  r^{d_1}_1* r^{d_2}_2*...* r^{d_{t_3}}_{t_3}
+	$$
+	则$(a,p) = p^{min(a_1,c_1)}_1*p^{min(a_2,c_2)}_2*....*p^{{min(a_{t_1},c_{t_1})}}_{t_1}$，
+	
+	$(a^{\phi(p)},p) =  p^{min(a_1*\phi(p),c_1)}_1*p^{min(a_2*\phi(p),c_2)}_2*....*p^{{min(a_{t_1}*\phi(p),c_{t_1})}}_{t_1}$。
+	
+	我们分析一下$a_i*\phi(p)$，$a_i*\phi(p)\ge a_i*p_i^{c_i-1}*(p_i-1) \ge p_i^{c_i-1}*(p_i-1) \ge p_i^{c_i-1}\ge c_i$。(其中$p_i$是$p$的因子)。
+	
+	于是有$(a^{\phi(p)},p) =  p^{min(a_1*\phi(p),c_1)}_1*p^{min(a_2*\phi(p),c_2)}_2*....*p^{{min(a_{t_1}*\phi(p),c_{t_1})}}_{t_1} = p^{c_1}_1*p^{c_2}_2*....*p^{c_{t_1}}_{t_1}$。
+	
+	于是
+	$$
+		(\frac{p}{(p\ ,\ a^{\phi(p)})}\ ,\ a)= 1
+	$$
+	证毕。
+\end{proof}
+
+实际上，广义欧拉降幂公式说明的是$a^b\%c$循环节的问题，
+
+这里\href{https://math.stackexchange.com/questions/653682}{https://math.stackexchange.com/questions/653682}
+有相关的讨论，$\phi(c)$不一定是最小的循环节长度。
+
+19南京网络赛B，如何方便求真值
+
+
+
+\subsection{威尔逊定理}
 
 
 \section{素性测试}
@@ -249,5 +446,8 @@ $$
 
 
 \begin{problemset}
-	\item xx
+	\item \href{http://poj.org/problem?id=2891}{Strange Way to Express Integers \quad POJ2891 \quad 同余方程组，模数不一定互质}  
+	\item \href{https://cn.vjudge.net/problem/Gym-101550E#}{Exponial \quad 欧拉降幂}
+	\item \href{}{ \quad 威尔逊定理的应用}
 \end{problemset}
+

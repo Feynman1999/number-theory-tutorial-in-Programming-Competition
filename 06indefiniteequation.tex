@@ -9,7 +9,24 @@
 
 \section{切比雪夫多项式}
 
+\section{其它不定方程}
 
+\subsection{OEIS A011772}
+	$f(n)=$最小的正整数$m$使得$\frac{m*(m+1)}{2}$是$n$的倍数。$f(1)\sim f(10)$分别为$1, 3, 2, 7, 4, 3, 6, 15, 8, 4$。现在
+	给定$n,\ 1\le n\le 10^{12}$，求$f(n)$。
+	
+	题目链接：\href{https://www.cometoj.com/contest/65/problem/C?problem_id=3684}{鱼跃龙门}
+	
+	\begin{solution}
+		由于$m*(m+1)$一定整除2，于是问题就是找最小的$m$，使得$m*(m+1)$是$2*n$的倍数，那我们假设是$k$倍，那就是解二元二次方程$m*(m+1) = 2nk$中$m$的最小正整数解。
+		乍一看很难做，这里需要用到$m$和$m+1$一定互质的性质。我们将$2n$质因数分解，然后分成$A,B$两块(暴力枚举)，即$2n = A*B,\ gcd(A,B)=1$。
+		然后设$m=Ax,\ m+1=By$，那么有$By-Ax=1,\ y=\frac{Ax+1}{B}$。我们的目的是让$k(=xy)$尽量小，由于$y$随$x$单增，所以只要$x$最小即可。
+		那么只要解$AX\equiv -1  (mod B)$的最小正整数解即可。
+		
+		时间复杂度为$O(\frac{\sqrt{2n}}{ln(\sqrt{2n})}+2^{12}*log(n))$。
+	\end{solution}
+	
+	\lstinputlisting[language=C++, style=codestyle2]{code06/OEIS-A011772.cpp}
 \begin{problemset}
 	\item xx
 \end{problemset}
