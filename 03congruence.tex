@@ -424,8 +424,15 @@ $$
 这里\href{https://math.stackexchange.com/questions/653682}{https://math.stackexchange.com/questions/653682}
 有相关的讨论，$\phi(c)$不一定是最小的循环节长度。
 
-19南京网络赛B，如何方便求真值
+\begin{example}
+2019南京网络赛B.superlog，题目经简化后即求$a^{a^{...}} \% m$的值，其中$...$共有$b$个$a$，数据范围是$a,b,m\ \le 10^6$。
+\end{example}
 
+由于$m$的范围已知，发现只有很少个形如$a^{a^{...}}$的式子的真值会比$m$小，提前预处理一下即可，这也是比较常见的做法，因为指数套指数增长的非常快。
+
+代码如下，时间复杂度为$O(T*log(m)*\sqrt{m})$。
+
+\lstinputlisting[language=C++, style=codestyle2]{code03/superlog.cpp}
 
 
 \subsection{威尔逊定理}
