@@ -436,10 +436,123 @@ $$
 
 
 \subsection{威尔逊定理}
+在欧拉公式的证明中，我们记$B=b_1b_2b_3...b_{\phi(m)}$，即$B$为小于$m$且与$m$互质的数的乘积。那么我们能给出一个结论，
+$B\equiv 1(mod\ m)$或$B\equiv m-1(mod\ m)$。那$m$的模式是怎样的？（即何时为$1$，何时为$m-1$）
 
+\begin{theorem}{威尔逊定理}{wilson}
+	将$m$质因数分解，若其形如$2^2,p^k, 2*p^k$中的一种，则$B\equiv m-1(mod\ m)$，否则$B\equiv 1(mod\ m)$，其中$p$为奇素数。
+	
+	特殊地，若$m$为素数，则$B=(m-1)!$，有$(m-1)! \equiv m-1 \ (mod\ m)$，反过来也成立。
+\end{theorem}
+
+威尔逊定理给出了判定一个{\heiti 自然数是否为素数}的充分必要条件，但是由于阶乘是呈爆炸增长的，其结论对于实际操作意义不大。
+实际（比赛）中，更常用的是一个叫$Miller\_Rabin$的测试，下面就来看一下如何做素性测试。
 
 \section{素性测试}
+素数是整数中优美的一部分，怎么判别一个数是不是素数呢？费马小定理告诉我们$a^p\equiv a \  (\ mod \ p)$，首先，不满足上式的数，一定不是素数。
+但就算你尝试了许多$a$之后发现都满足上式，也不能断言$p$就是素数!
 
+确实，对于大部分小的合数$n$，你会发现选取的大部分$a(a<n)$，都不满足费马小定理。
+但是！还是有一些合数，比如$561=3*11*17$ ，对所有的$0\leq a < 561$ ，发现都满足费马小定理!
+
+下面证明一下，要证明$a^{561}\equiv a\  (mod \ 561)$，只要证明
+\begin{align*}
+a^{561}\equiv a\  (mod  \ 3) \ ,\quad a^{561}\equiv a\  (mod  \ 11) \  ,\quad  a^{561}\equiv a\  (mod  \ 17)
+\end{align*}
+为什么呢？因为若第一个式子成立，则$3 \ |\  a^{561}-a$  ，同理11,17也整除，由于3,11,17互质，则561也整除。
+下面就来证明，对于第一个式子，若3能整除a,则显然成立；否则，由于$a^2\equiv 1\ (mod \ 3)$  ，则$a^{561}=a^{2*280+1}=(a^2)^{280}*a\equiv 1*a \equiv  a  \ (mod \ 3)$，
+后面两个式子同理。
+
+$561$很特殊！类似这样的数，称为卡米歇尔数。\href{http://oeis.org/A002997/b002997.txt}{http://oeis.org/A002997/b002997.txt}
+
+\subsection{卡米歇尔数}
+
+\begin{definition}{卡米歇尔数}{label}
+	卡米歇尔数是这样的合数$n$，即对每个整数$1\le a < n$，都有
+	$$
+		a^n \equiv a \ (mod \ n)
+	$$
+\end{definition}
+
+关于卡米歇尔数，存在一些猜想：
+
+{\heiti
+\begin{enumerate}
+	\item 卡米歇尔数都是奇数;
+	\item 卡米歇尔数是不同素数的乘积。
+\end{enumerate}
+}
+
+\begin{proof}
+	对1的证明。
+	
+	由于$a^n\equiv a \ (mod \ n)$，令$a=n-1$，则可得$(-1)^n\equiv -1 \ (mod \ n)$  则$n$是奇数。
+\end{proof}
+
+\begin{proof}
+	对2的证明。
+	
+	假设卡米歇尔数的任意一个素因子（次幂）为$p^{(e+1)}$ ，下面我们努力证明$e=0$。
+	
+	将$p^e$带入$a^n\equiv a \ (mod \ n)$，得到$p^{en}\equiv p^e \ (mod \ n)$，所以$n \ | \ p^{en}-p^e$，又$p^{e+1} \ | \ n$，所以$p^{e+1} \ | \ p^{en}-p^e$，
+	从而$e=0$。证毕。
+\end{proof}
+
+
+\begin{theorem}{卡米歇尔数的考塞特判别法}{kamixieer}
+	设n是合数，则n是卡米歇尔数当且仅当它是奇数，且整除n的每个素数$p$满足下述两个条件：（充分必要）
+	\begin{itemize}
+		\item $p^2 $不整除n
+		\item $p-1$整除$n-1$ （实际上整除更小的数$\frac{n}{p}-1$）
+	\end{itemize}
+\end{theorem}
+
+利用考塞特判别法，我们可以在$O(\sqrt{n})$的时间内处理单个数的判别以及$O(T*n)$求区间carmichael数，其中$T$表示大常数。
+
+下面的代码求出$\le 10^7$的所有carmichael数。
+\lstinputlisting[language=C++, style=codestyle2]{code03/carmichael.cpp}
+
+1994年，W.R.Alford等人证明了卡米歇尔数有无穷多个。
+
+卡米歇尔数的存在，使得我们需要一个更好的检验合数的办法。
+
+\subsection{Miller\_Rabin测试}
+合数的miller\_rabin测试是基于以下事实的：
+
+\begin{theorem}{素数的一个性质}{label}
+设$p$是奇素数，记$p-1=2^kq$ ，$q$是奇数，{\heiti 设$a$是不被$p$整除的任何数}，则下述两个条件之一一定成立：（但满足条件之一的数不一定是素数，卡米歇尔数）
+\begin{itemize}
+	\item $a^q$模$p$余1
+	\item 数$a^q,a^{2q},a^{2^2q},...,a^{2^{k-1}q}$之一模$p$余$-1$
+\end{itemize}
+\end{theorem}
+
+\begin{proof}
+	费马小定理告诉我们$a^{p-1}\equiv 1\ (mod \ p)$。这意味着对于数表$a^q,a^{2q},a^{2^2q},...,a^{2^{k-1}q},a^{2^kq}$ ，最后一个数模$p$余1，且表中的每个数是前一个数的平方。因此下述两种可能之一必成立：
+\begin{itemize}
+	\item 表中的第一个数模$p$余1
+	\item 表中的一些数模$p$不余1，但是，当平方时它就模$p$余1，所以该数是$-1(mod \ p)$，即表包含$-1(mod \ p)$
+\end{itemize}
+	证毕。
+\end{proof}
+
+\begin{theorem}{miller\_rabin测试}{label}
+	设$n$是奇素数，记$n-1=2^kq$，$q$是奇数，对不被$n$整除的某个$a$，如果下述{\heiti 两个条件都成立}，则$n$一定是合数：（但有不成立的也不一定是素数，于是可以做多次...）
+	\begin{itemize}
+		\item $a^q \not\equiv 1 \ (mod \ n)$
+		\item 对所有的$i=0,1,2,...,k-1 ,\quad a^{2^iq}\not\equiv -1\ (mod \ n)$
+	\end{itemize}
+\end{theorem}
+和费马小定理测试相比，miller\_rabin测试不存在“卡米歇尔型数”，因为可以保证，如果$n$是奇合数，则1$\sim$n-1之间至少有约75\%的
+数可作为miller\_rabin的证据。即这些数作为$a$时，可以说明其合数性。
+
+{\heiti 换句话说，每个合数都有许多证据来说明它的合数性。}
+
+例如随机选取100个$a$的值，若实验发现其中均没有$n$的miller\_rabin证据(两个条件一直都有不成立的)，则$n$是合数的概率小于$0.25^{100}$。
+
+
+时间复杂度：$O(T*logn*logn)$ ，其中$T$为测试次数，（如果$n>10^9$，需要使用快速乘，认为是两个$log$）。
+\lstinputlisting[language=C++, style=codestyle2]{code03/miller.cpp}
 
 \section{Pollard\_Rho质因数分解}
 
@@ -455,6 +568,7 @@ $$
 \begin{problemset}
 	\item \href{http://poj.org/problem?id=2891}{Strange Way to Express Integers \quad POJ2891 \quad 同余方程组，模数不一定互质}  
 	\item \href{https://cn.vjudge.net/problem/Gym-101550E#}{Exponial \quad 欧拉降幂}
-	\item \href{}{ \quad 威尔逊定理的应用}
+	\item \href{http://acm.hdu.edu.cn/showproblem.php?pid=4910}{Problem about GCD \quad 威尔逊定理的应用}
+	\item \href{}{ \quad 素性测试}
 \end{problemset}
 
