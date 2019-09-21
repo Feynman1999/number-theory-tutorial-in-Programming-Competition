@@ -556,8 +556,67 @@ $561$很特殊！类似这样的数，称为卡米歇尔数。\href{http://oeis.
 
 \section{Pollard\_Rho质因数分解}
 
+Pollard\_Rho算法是一种用于质因数分解的算法，对于一个待分解的数$N$，假设$N$的最小的质因数为$p(p\neq N)$，那么Pollard\_Rho算法
+能够在$O(\sqrt{p}*\alpha(N))$的期望时间复杂度内将$N$分解为两个不是1的数的乘积，其中$\alpha(N)$是求解两个数的gcd的时间复杂度，而且
+其不需要额外的空间！下面我们就来看一下它是怎么工作的。
+
+我们之前质因数分解的方法就是去拿$1\sim \sqrt{N}$的所有数去试除，那如果$N$是$10^{18}$，就顶不住了。其实，可以随机去做这件事，如果运气好的话，
+就可以将一个数分解为两个数相乘($\frac{1}{\sqrt{N}}$的概率)。有没有更好的方法，使得猜中其因数的概率增大呢？
+
+我们先来考虑这样一个问题：在$[1,1000]$里随机选择一个数，是$23$的概率是多少？显然是$\frac{1}{1000}$，那如果我们选择两个数$i,j$，$|i-j|=23$的概率是多少？
+答案大概是$\frac{1}{500}$。这给了我们一点启发，这种“多点采样”的方法，是否能提高选中目标的概率？著名的生日悖论就是这种思想！
+
+假如说班上有$k$个人，如果找到一个人的生日是2月3日，这个概率比较低。但是如果单纯想找到两个生日相同的人，这个概率就会很高！
+由高中的数学知识知道，$k$个人生日互不相同，其概率为：$p=\frac{365}{365}*\frac{364}{365}*\frac{363}{365}*...*\frac{365-k+1}{365}$,
+故生日有重复的现象的概率是$P(k) = 1 - \Pi_{i=1}^k\frac{365-i+1}{365}$。当$P(k)\ge\frac{1}{2}$时，解得$k$大概只需要23。
+当$k$取到$60$时，$P(k)\approx 0.9999$。这可能和我们的直觉不符，因此被称为悖论。
+
+现在回到因数分解的问题上，由于一定有$gcd(k,n)\ |\ n$，如果我们通过一些组合选取适当的$k$，有$gcd(k,n)>1$，就找到了一个$n$的因数！
+这样的$k$的数量还是蛮多的，假设$n$有若干个质因子，则每个质因子的倍数都是可行的(简单一想，至少得有$O(\sqrt{n})$个吧)。
+于是，我们可以选取一组数$x_1,x_2,...,x_n$，若有$gcd(|x_i-x_j|,N)>1$，则$gcd(|x_i-x_j|,N)$是$N$的一个因子。
+有前人在论文中指出，要使概率接近1，需要选取的数的个数大约是$O(N^{\frac{1}{4}})$。但是如果要$O(n^2)$枚举两两计算，还不如直接$\sqrt{N}$暴力。
+
+我们不妨考虑构造一个伪随机数序列，然后取相邻的两项做差来求$gcd$，这样时间复杂度就降了下来。{\heiti 为了生成一串优秀的随机数}，$Pollard$设计了这样一个函数：
+$f(x) = (x^2+c)  \ mod\ N$，其中$c$是一个随机的常数。之所以叫伪随机数，是因为这个序列里可能会含有循环，比如取$c=7, N=20, x_1=1$，序列为$1,8,11,8,11,8,...$。
+循环节的产生很自然，在模$N$的意义下，函数的值域为$0,1,2...,N-1$，只要有一次序列的值之前出现过，那么序列就会开始循环。如果画出这个序列，并让循环的地方指向之前，其轨迹
+很像一个希腊字母$\rho$。（算法名字的由来）
+
+为了方便地判断环的存在，可以用{\heiti 快慢指针}。
+
+考虑有一个单链表，其中可能有一个环，也就是某个节点的next指向的是链表中在它之前的节点，这样在链表的尾部会形成环，如图\ref{fig:Fast-and-slow-pointer}。
+现在有两个指针都指向开始节点$A$，然后向右移动，一个一次移动一个节点，另外一个一次移动两个节点，假设相遇在$P$点，那么可以证明一定有$P->B$的长度等于$A->B$。
+对于上面的伪随机数序列，有$A->P$(不包含$P$)为一个完整的循环节。于是我们可以设置两个变量，一个变量每次向后迭代一次，而另一个每次向后迭代计算两次，在这两个
+变量相等之前，取它们的差用于求$GCD$。
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{Fast-and-slow-pointer.png}
+	\caption{Fast-and-slow-pointer \label{fig:Fast-and-slow-pointer}}
+\end{figure}
+
+代码如下：
+\lstinputlisting[language=C++, style=codestyle2]{code03/pollard-rho.cpp}
+
+由于求$GCD$大概会有一个常数，考虑进一步优化。显然如果我们能求得$gcd(ab,N)>1$，那么也是找到了一个因子，只要$a,b$中某一个有$N$的因子即可。
+所以我们可以先不急着做$GCD$，而是做一系列的$|t-s|$的连乘，到一定次数再做$GCD$。为了不溢出，我们使连乘的结果$mod\ N$，由欧几里得算法知答案不变。
+
+\lstinputlisting[language=C++, style=codestyle2]{code03/pollard-rho-with-multi.cpp}
+
+pollard-rho算法往往会和miller-rabin同时使用，比如章节题目\ref{prob:pollard}。
+其要判断一个数是否是素数，若不是则输出其最大质因子。
+
+代码如下，可作为模板，时间复杂度$O(T*\alpha*(N^{1\over 4}+log^2(N)))$。其中$T$表示数据组数，$\alpha$表示一个不小的常数。
+
+\lstinputlisting[language=C++, style=codestyle2]{code03/luogu-p4718.cpp}
 
 \section{离散对数}
+
+
+
+
+
+
+
 
 
 \section{原根}
@@ -569,6 +628,7 @@ $561$很特殊！类似这样的数，称为卡米歇尔数。\href{http://oeis.
 	\item \href{http://poj.org/problem?id=2891}{Strange Way to Express Integers \quad POJ2891 \quad 同余方程组，模数不一定互质}  
 	\item \href{https://cn.vjudge.net/problem/Gym-101550E#}{Exponial \quad 欧拉降幂}
 	\item \href{http://acm.hdu.edu.cn/showproblem.php?pid=4910}{Problem about GCD \quad 威尔逊定理的应用}
-	\item \href{}{ \quad 素性测试}
+	\item \href{https://vjudge.net/problem/HDU-5391}{Zball in Tina Town \quad 威尔逊定理 \quad 素性测试}
+	\item \href{https://www.luogu.org/problem/P4718}{【模板】Pollard-Rho算法 \quad 素性测试 \quad Pollard\_Rho质因数分解 \label{prob:pollard}}
 \end{problemset}
 

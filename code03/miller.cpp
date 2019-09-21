@@ -10,7 +10,7 @@ typedef long long ll;
 //    }
 //    return res;
 //}
-ll mod_mul(ll a, ll b, ll c){
+ll mod_mul(ll a, ll b, ll c){//或者int128
     return a*b%c;
 }
 ll fast_exp(ll a,ll b,ll c){
@@ -31,7 +31,7 @@ bool test(ll n,ll a)//false表示为合数
     while(!(d&1))  d>>=1;//将d分解为奇数 至少有一个2因子，所以d!=n-1
     ll t=fast_exp(a,d,n);
     while(d!=n-1 && t!=1 && t!=n-1){
-        t=mod_mul(t,t,n);//平方  使用快速乘 因为t,n 1e18
+        t=mod_mul(t,t,n);//平方  使用快速乘 因为t,n 1e18    或者int128
         d<<=1;
     }
     return ((t==n-1) || (d&1) ==1 );//两个条件都不成立则一定是合数; 第二个条件d为奇数 即t一开始为1 (mod n)
