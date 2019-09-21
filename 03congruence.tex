@@ -611,12 +611,43 @@ pollard-rho算法往往会和miller-rabin同时使用，比如章节题目\ref{p
 
 \section{离散对数}
 
+现在我们来思考这样一个问题：
 
+\begin{custom}{问题}
+	给定$a,b,m$，求$a^x\equiv b \ (mod \ m)$的解$x$。
+\end{custom}
 
+\begin{solution}
+	
+	我们设$x=A\left \lceil \sqrt{m} \right \rceil -B$，其中$0\le B< \left \lceil \sqrt{m} \right \rceil$， $0< A\le \left \lceil \sqrt{m} \right \rceil+1$，这样化简后的方程是
+	$$
+	a^{A\left \lceil \sqrt{m} \right \rceil}\equiv b\cdot a^B \quad (mod \ m)
+	$$
+	由于$A$和$B$值域都是$O(\sqrt{m})$级别的，所以可以先计算右边部分的值，存入$Hash$表，然后从小到大枚举$A$计算左边的值，在$Hash$表中查找。
+	（当然，可以这样做的原因是一定存在$a$的逆元）即只要$gcd(a,m)=1$，上面的方法就是有效的。所以当$m$是质数时，用这种方法(Baby Step Giant Step, bsgs)即可。
+	
+	{\heiti 当$m$不是质数时}，我们要求解的是$a^x+km=b$，设$g=gcd(a,m)$，如果$g$不整除$b$，则无解，否则方程两边同除以$g$，得到$\frac{a}{g}a^{x-1}+k\frac{m}{g}=\frac{b}{g}$。
+	这样便消去了m的一个因子，得到方程
+	$$
+	\frac{a}{g}a^{x-1}\equiv \frac{b}{g}\quad (mod \   \frac{m}{g})
+	$$
+	令${m}'=\frac{m}{g} ,\ b'=\frac{b}{g}(\frac{a}{g})^{-1}$， 得到
+	$$
+	a^{x'}\equiv b' \quad (mod \ m')
+	$$
+	于是可以递归，得到的解加1即$x=x'+1$为原方程的解。
+	
+	{\heiti 但是，进行一次这样的操作，新的方程不一定可以用bsgs求解，所以会进行多次。}
+	
+	如果中途出现$b'=1$则$x'=0$。
+\end{solution}
 
+时间复杂度  $O(\sqrt{m}log\sqrt{m})$，手写二分比unordered\_map会快一点。
 
+\lstinputlisting[language=C++, style=codestyle2]{code03/bsgs.cpp}
 
-
+注意到代码中有一个技巧，不用把每一步的逆元实际求出来，放到式子左边乘起来就行。
+查表时，把初值设置为这个数$*a^{\left \lceil \sqrt{m} \right \rceil}$即可。
 
 
 \section{原根}
@@ -630,5 +661,6 @@ pollard-rho算法往往会和miller-rabin同时使用，比如章节题目\ref{p
 	\item \href{http://acm.hdu.edu.cn/showproblem.php?pid=4910}{Problem about GCD \quad 威尔逊定理的应用}
 	\item \href{https://vjudge.net/problem/HDU-5391}{Zball in Tina Town \quad 威尔逊定理 \quad 素性测试}
 	\item \href{https://www.luogu.org/problem/P4718}{【模板】Pollard-Rho算法 \quad 素性测试 \quad Pollard\_Rho质因数分解 \label{prob:pollard}}
+	\item \href{https://www.spoj.com/problems/MOD/}{MOD - Power Modulo Inverted \quad 离散对数}
 \end{problemset}
 
