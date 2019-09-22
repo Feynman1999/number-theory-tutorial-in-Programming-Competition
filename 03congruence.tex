@@ -651,9 +651,211 @@ pollard-rho算法往往会和miller-rabin同时使用，比如章节题目\ref{p
 
 
 \section{原根}
+\subsection{幂模$p$与原根}
+
+如果$a$和$p$互素，费马小定理告诉我们，$a^{p-1} \equiv 1\ (mod\ p)$，那么这个指数$p-1$是唯一的使得结果为1的吗？
+我们选择一些$a$和$p$来看一下，对于$a=3,p=7$，指数只有为6时才取到1,如表\ref{tab:root}。
+
+
+\begin{table}[!htbp]
+	\centering
+	\caption{$a=3,\ p=7$ \label{tab:root}}
+	\begin{tabular}{ccc}
+		\midrule
+		 $3^1\equiv 3(mod\ 7)$  & $3^2\equiv 2(mod\ 7)$ & $3^3\equiv 6(mod\ 7)$ \\
+		 $3^4\equiv 4(mod\ 7)$    & $3^5\equiv 5(mod\ 7)$ & $3^6\equiv 1(mod\ 7)$ \\
+		 \bottomrule
+	\end{tabular}%
+\end{table}%
+
+再列多一点，如表\ref{tab:root2}，从表中可以看出，似乎有这样的性质：
+\begin{itemize}
+	\item 对于任何底数，最小指数$e$整除$p-1$；
+	\item 总有一些底数，指数需要到$p-1$。
+\end{itemize}
+
+\begin{table}[!htbp]
+	\centering
+	\caption{不同底数对应的最小指数 \label{tab:root2}}
+	\begin{tabular}{ccc}
+		\toprule
+		$p=5$  & $p=7$ & $p=11$ \\
+		\midrule
+		$1^1\equiv 1(mod\ 5)$  & $1^1\equiv 1(mod\ 7)$ & $1^1\equiv 1(mod\ 11)$ \\
+		$2^4\equiv 1(mod\ 5)$    & $2^3\equiv 1(mod\ 7)$ & $2^{10}\equiv 1(mod\ 11)$ \\
+		$3^4\equiv 1(mod\ 5)$  & $3^6\equiv 1(mod\ 7)$ & $3^5\equiv 1(mod\ 11)$ \\
+		$4^2\equiv 1(mod\ 5)$    & $4^3\equiv 1(mod\ 7)$ & $4^5\equiv 1(mod\ 11)$ \\
+	                             & $5^6\equiv 1(mod\ 7)$ & $5^5\equiv 1(mod\ 11)$ \\
+		    					& $6^2\equiv 1(mod\ 7)$ & $6^{10}\equiv 1(mod\ 11)$ \\
+		  											& & $7^{10}\equiv 1(mod\ 11)$ \\
+		   			  								& & $8^{10}\equiv 1(mod\ 11)$ \\
+		   			  								& & $9^{5}\equiv 1(mod\ 11)$ \\
+		   			  								& & $10^{2}\equiv 1(mod\ 11)$ \\
+		\bottomrule
+	\end{tabular}%
+\end{table}%
+
+
+为了方便，我们定义$a$模$p$的阶指$e_p(a)=[min\ e\ s.t.\ a^e\equiv 1(mod \ p)]$，其中$a$和$p$互质。另外，规定$e_p(a)\ge 1$，显然$e_p(a)\le p-1$。
+
+\begin{theorem}{次数整除性质}{label}
+	设a是不被素数$p$整除的整数，假设$a^n \equiv 1 \ (mod \ p)$，则次数$e_p(a)$整除$n$，特别地$e_p(a)$总整除$p-1$。
+\end{theorem}
+
+\begin{proof}
+	次数$e_p(a)$的定义告诉我们
+	$$
+	a^{e_p(a)}\equiv 1 \ (mod \ p)
+	$$
+	假设$a^n\equiv 1(\ mod \ p)$，
+	设$G=gcd(e_p(a),n)$，
+	并设$(u,v)$是方程$e_p(a)u-nv=G$的正整数解（可知一定有解）。现在有两种不同的方法计算$a^{e_p(a)u}$：
+	\begin{align*}
+		a^{e_p(a)u}=(a^{e_p(a)})^u\equiv 1 \ (mod \ p)  \\
+		a^{e_p(a)u}=a^{nv+G}\equiv a^G \ (mod \ p)  \\
+	\end{align*}
+
+	这表明$a^G\equiv 1 (\ mod \ p)$ ，所以必有$e_p(a)\le G$。
+	
+	另一方面$G \ | \ e_p(a)$，所以$G=e_p(a)\ ,\ e_p(a)\ | \ n$，证毕。
+\end{proof}
+
+{\heiti 现在我们的一个猜想得到了证明，来看另外一个：$e_p(a)=p-1$的底数$a$有什么规律。}
+
+如果a是这样的数，则幂
+$$
+a^1,\ a^2,\ a^3,\ ...\ ,\ a^{p-2},\ a^{p-1}\quad (\ mod \ p)
+$$
+{\heiti 必须都是模$p$不同的。}[如果幂不是全不相同，则对某指数$1\le i <j\le p-1$有$a^i\equiv a^j \ (mod \ p)$，由于a,p互质，则有$1\equiv a^{j-i} \ (mod \ p)$，由于$j-i<p-1$，则矛盾]。
+
+{\heiti 这$p-1$个不同的数取遍了$[1,p-1]$。}
+
+{\heiti 这样的数很重要，为了方便，我们称这样的数$g$为模数$p$的原根，即$e_p(g)=p-1$。}
+
+回顾前面的那张表\ref{tab:root2}，5的原根是2,3\quad ;\quad 7的原根是3,5\quad ;\quad 11的原根是2,6,7,8。
+可见原根可以不止一个，那到底有多少个？所有素数都有原根吗？
+
+\begin{theorem}{原根定理}{label}
+每个素数$p$都有原根。更精确地，有恰好$\varphi(p-1)$个原根。
+\end{theorem}
+
+神奇！尽管原根定理没有指出求$p$的原根的具体方法，但一旦能求得一个原根，就可以容易得求出其他原根（后面介绍）。求原根的常用方法是从小到大枚举正整数a=2,3,5,6......。{\heiti 因为原根的分布比较广}。（思考为什么没有4）。
+为啥没4？因为$4^{\frac{(p-1)}{2}}\equiv 2^{p-1}\equiv 1 \ (mod \ p)$，即4一定不是原根。（可见2的高次幂都不是）
+
+\begin{proof}
+	原根定理的证明。
+	
+	对$1\sim p-1$之间的每个数$a$，$e_p(a) \ | \ (p-1)$ ，所以，对整数$p-1$的每个因子$d$，我们可能会问，有多少个$e_p(a)$等于$d$，由于要用，我们记这个数为$\psi (d),\ 1\le a <p$。 
+	$\psi(p-1)$即为模数$p$的原根个数。
+	
+	设$n$是整除$p-1$的任何数，比如说$p-1=nk$，则可将多项式$X^{p-1}-1$分解成$X^{nk}-1=(X^n)^k-1=(X^n-1)((X^n)^{k-1}+(X^n)^{k-2}+...+(X^n)^2+X^n+1)$
+	
+	我们数一下这些多项式模$p$有多少个根。
+	
+	首先，$X^{p-1}-1\equiv 0 \ (mod \ p)$恰好有$p-1$个解，即$[1,p-1]$这些。
+	
+	另一方面，$(X^n-1)\equiv 0 \ (mod \ p)$至多有$n$个解，且
+	$$
+	(X^n)^{k-1}+(X^n)^{k-2}+...+(X^n)^2+X^n+1 \equiv 0 \ (mod \ p)
+	$$
+	至多有$nk-n$个解。
+	
+	因此我们得到：
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[width=0.7\textwidth]{prime-root.png}
+		\caption{根的情况 \label{fig:prime-root}}
+	\end{figure}
+
+	上式要成立，$X^n-1$模$p$恰有$n$个根。这就证明了下述重要事实：
+	
+	{\heiti 如果$n \ | \ p-1$，则同余式$X^n-1\equiv 0 \ (mod \ p)$恰好有$n$个根满足$0\le X<p$。}
+	
+	现在再用另一种计数方法计数这个同余式的解的个数。如果$X=a$是一个解，则$a^n\equiv 1\ (mod \ p)$，因此$e_p(a)\ | \ n$，即$e_p(a)$对应$n$的一个因子$d$。
+	从这个角度，$X^n-1\equiv 0 \ (mod \ p)$解($0\le X<p$)的个数等于：
+	$$
+		\sum_{d|n}\psi(d)=\psi(d_1)+\psi(d_2)+...+\psi(d_r)
+	$$
+	
+	综合上面两个角度，我们得到一个结论：
+	\begin{center}
+	{\heiti 若$n$整除$p-1$，则$\sum_{d|n}\psi(d)=n$}
+	\end{center}
+
+	
+	这个公式和欧拉函数的形式一样！首先，$\varphi(1)=1$，而$\psi(1)=1$，下面证明当$n=q$为素数时，$\psi(n)=\varphi(n)$。
+	q的因数是1和q，所以$\psi(q)+\psi(1)=q=\varphi(q)+\varphi(1)$，由于$\psi(1)=\varphi(1)$，则$\psi(q)=\varphi(q)$。$n=q^2$和$n=q_1q_2$也可以类似证明。
+	更正式地，可以给出归纳证明，这里不展示了。
+	
+	证毕。
+\end{proof}
+
+{\heiti 综上，我们已证明对整除$p-1$的每个整数$n$，恰好有$\varphi(n)$个底数$a$使得$e_p(a)=n$，取$n=p-1$，则$\varphi(p-1)$为原根个数。显然，每个素数至少有一个原根。}
+
+\vbox{}
+
+{\heiti 求原根，时间复杂度： 对于单个$p$，$O(\sqrt{p} + T*logn*logn)$   ；对于区间问题，可以做到$O(nlogn + \frac{n}{logn}*T*logn*logn)$，其中$T$表示平均意义下每个素数最小原根。
+除以$logn$是因为素数的分布。}
+\lstinputlisting[language=C++, style=codestyle2]{code03/primitive-root.cpp}
+
+\subsection{原根与指标}
+我们大概知道原根是啥了，那指标是什么呢？对于模数13，2是它的原根，那么$2^x\ mod \ 13$会取遍$[1,12]$里所有的数，$x\in [1,12]$。
+{\heiti 而指标函数$I$就是从余数到指数的双射函数。}比如$2^4\equiv 3\ (mod\ 13)$，则$I(3) = 4$。
 
 
 
+\begin{theorem}{指标法则}{label}
+	指标满足下述法则：
+		\begin{itemize}
+			\item $I(ab)\equiv I(a)+I(b) \quad (mod \ p-1)$ \quad  乘积法则
+			\item $I(a^k)\equiv k*I(a)  \quad (mod \ p-1)$ \quad  幂法则
+		\end{itemize}
+\end{theorem}
+
+\begin{note}
+	模数是$p-1$。
+\end{note}
+
+\begin{proof}
+	 $g^{I(ab)}\equiv ab\equiv g^{I(a)}g^{I(b)}\equiv g^{I(a)+I(b)}\quad (mod \ p)$
+	
+	这意味着$g^{I(ab)-I(a)-I(b)}\equiv 1\ (mod \ p)$，又$g$是原根，则$I(ab)-I(a)-I(b)$是$p-1$的倍数。
+	
+	所以乘积法则得证。幂法则同理。
+\end{proof}
+
+\vbox{}
+
+利用指标这个工具，可以方便地解一些高次同余方程。
+
+\begin{custom}{问题}
+求同余式$3x^{30}\equiv 4\ (mod \ 37)$。
+\end{custom}
+
+\begin{solution}
+	使用乘积法则和幂法则：
+$$
+\begin{aligned} I\left(3 x^{30}\right) &=I(4) \\ I(3)+30 I(x) & \equiv I(4)(\bmod 36) \\ 26+30 I(x) &\equiv2(\bmod 36) \\ 30 I(x) & \equiv-24\equiv12(\bmod 36) \end{aligned}
+$$
+对于最后一个式子，是一个同余方程，由于$gcd(30,36)=6\ |\ 12$，则其有解，且有6个不同余解。
+我们求得
+$$
+I(x)\equiv 4,\ 10,\ 16,\ 22,\ 28,\ 34 \quad (mod \ 36)
+$$
+再查双射表得到对应的值，有6个解$16,\ 25,\ 9,\ 21,\ 12,\ 28$。
+\end{solution}
+
+可以看到指标法的优点在于将{\heiti 幂运算转为乘法，将乘法转为加法}。这一点和对数函数很像：
+$$
+\begin{aligned} \log (a b) &=\log (a)+\log (b) \\ \log \left(a^{k}\right) &=k \log (a) \end{aligned}
+$$
+
+类似这一题的同余式称为剩余问题，下一章我们就来研究一下。这一章就到这。
+
+
+\vbox{}
+
+\vbox{}
 
 \begin{problemset}
 	\item \href{http://poj.org/problem?id=2891}{Strange Way to Express Integers \quad POJ2891 \quad 同余方程组，模数不一定互质}  
@@ -662,5 +864,8 @@ pollard-rho算法往往会和miller-rabin同时使用，比如章节题目\ref{p
 	\item \href{https://vjudge.net/problem/HDU-5391}{Zball in Tina Town \quad 威尔逊定理 \quad 素性测试}
 	\item \href{https://www.luogu.org/problem/P4718}{【模板】Pollard-Rho算法 \quad 素性测试 \quad Pollard\_Rho质因数分解 \label{prob:pollard}}
 	\item \href{https://www.spoj.com/problems/MOD/}{MOD - Power Modulo Inverted \quad 离散对数}
+	\item 对任何正整数$k$，求$1^k+2^k+3^k+...+(p-1)^k\ (mod\ p)$的值。 \  ans:0 \href{https://math.stackexchange.com/questions/1049420/for-any-positive-number-k-find-the-value-of-1k-2k-3k-p-1kmod?r=SearchResults#}{solution}
+	\item (2017四川省赛K.2017)给你$n$(不超过200w)个数，和一个数$r$，问你有多少种方案，使得你取出某个子集，能够让它们的乘积$mod \ 2017$等于$r$。由于
+	方案数众多，最后只需要输出答案的奇偶性即可。\href{https://www.cnblogs.com/autsky-jadek/p/7496328.html}{\quad 原根}
 \end{problemset}
 
