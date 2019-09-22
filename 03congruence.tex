@@ -116,7 +116,12 @@ $$
 \lstinputlisting[language=C++, style=codestyle2]{code03/fastmul.cpp}
 
 \subsection{$O(1)$快速乘}
+上面的“快速乘”时间是$O(logb)$的，如果是两个63位数相乘（结果long long 存不下），则还有一个巧妙的方法可以简单解决这个问题：
 
+\lstinputlisting[language=C++, style=codestyle2]{code03/o1fastmul.cpp}
+
+首先使用浮点运算来得到$\left\lfloor\frac{a * b}{P}\right\rfloor$的值，显然$a*b-d*p$中的两个乘法都有可能会溢出，但是没关系，因为可以知道其差是一个64bit可容纳的正整数，那么溢出部分的差仅可能为0或者1，最后
+特判处理一下即可。	
 
 
 \subsection{快速幂}
