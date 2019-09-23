@@ -10,10 +10,54 @@
 
 \subsection{斐波那契循环节}
 
-\subsection{二进制循环小数循环节}
+\subsection{分数小数的循环节}
+\begin{custom}{问题}
+给定一个分数$\frac{p}{q}$，将其转化为小数。
+\end{custom}
+
+\begin{solution}
+考虑一个分数，有以下三种情况：
+\begin{itemize}
+	\item 整数
+	\item 有限小数
+	\item 无限循环小数
+\end{itemize}
+
+先来考虑下无限循环小数，我们先将$p$和$q$公共的因子除去，然后利用循环这个性质，可知存在$i,j$满足，$p*10^i \equiv p*10^j \ (mod \ q), \ where\ j>i\ge0$。
+{\heiti 这里$i$代表循环出现前有多少位数，$j-i$表示循环节长度。}
+化简后得$p*10^i*(10^{j-i}-1) \equiv 0\   (mod \ q)$。也就是说，$q\ |\ p*10^i*(10^{j-i}-1)$。由于$10^{j-i}-1$中一定不存在因子$2$和$5$，所以要想是$q$的倍数，
+$2$和$5$的贡献均来自$10^i$。于是我们记录$q$中$2$的次幂数为$num2$，$5$的次幂数为$num5$，则$i = max(num2,num5)$。记$q$除去所有$2$和$5$因子后，为$m$，则$10^{j-i}\equiv 1 \ (mod\ m)$。
+然后我们解同余方程$10^x\equiv 1\ (mod\ m),\ where\ x>0$，$j$就等于$x+i$。至于这个方程，$x$一定是$\varphi(m)$的因子，枚举因子判定即可。
+
+如果$j$无解，表示该小数为有限小数，$i$也就表示了小数点后共有几位；如果$j$有解，含义如上。
+\end{solution}
+
+\href{https://www.luogu.org/problem/P1530}{luogu P1530 分数化小数}
+
+时间复杂度：$\sqrt{q}*log(q)$ \quad （确定i,j）
+
+输出格式： 按照下面规则，如果结果长度大于76,每行输出76个字符。
+\begin{itemize}
+	\item 2/2 = 1.0
+	\item 3/8 = 0.375
+	\item 45/56 = 0.803(571428)
+\end{itemize}
+
+\lstinputlisting[language=C++, style=codestyle2]{code07/fraction2decimal.cpp}
+
+\begin{note}
+	由于上面这个题目要求输出时每行只要$76$个字符，我在写代码时一开始没有注意，因此直接使用的cout。所以代码中我使用了下面的方法：
+	\lstinputlisting[language=C++, style=codestyle2]{code07/redirect-cout.cpp}
+	
+	先将cout重定向到stringstream，然后从其中取出string，最后将cout还原到stdout。
+\end{note}
 
 \section{DFS Similar}
+\subsection{反欧拉函数}
 
+\subsection{因子个数最多的数}
+
+\subsection{Counting Sequences I(18上海网络赛D)}
 
 \section{平方数之和}
 
