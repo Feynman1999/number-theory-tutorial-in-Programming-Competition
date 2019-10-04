@@ -415,6 +415,48 @@ Part III证毕。
 模数为素数。
 \lstinputlisting[language=C++, style=codestyle2]{code04/quad-res.cpp}
 
+\vbox{}
+
+{\heiti 如果模数是质数幂呢？}
+
+设$q=p^k$，考虑求解$x^2\equiv n\ (mod\ q)$。当$n\equiv 0\ (mod\ p^k)$时，解为$x \equiv 0\left(\bmod p^{\lceil k / 2\rceil}\right)$。
+否则可令$n=p^{r} a,\ p \nmid a,\ 0 \leqslant r<k$，有解时需要$r$为偶数，令$x=p^{r/2}x'$，则$x'^2\equiv a\ (mod\ p^{k-r})$。
+
+所以只要考虑$x^2\equiv a\ (mod\ q)$，且$p\nmid a$的情况即可。下面分$p=2$和$p>2$两种情况讨论。
+
+\begin{enumerate}
+\item {\heiti 模2的幂。}$x^{2} \equiv a(\bmod\ q), q=2^{k}, 2\nmid a$。$q=4$时，有解当且仅当$a\equiv 1\ (mod\ 4)$，解为$x\equiv 1,3\ (mod\ 4)$。
+
+下面考虑$q\ge8$的情况。由于任意奇数的平方模$8$余1，于是需有$a\equiv 1\ (mod\ 8)$。此时，$x^2\equiv a\ (mod\ q)$恰有4个解$\pm x_{k}, \pm\left(q / 2-x_{k}\right)$。
+\begin{proof}
+$q=8$时，4个解分别为$x \equiv \pm 1, \pm 3(\bmod 8)$。下面进行归纳。设$x^{2} \equiv a\left(\bmod\ 2^{k}\right)$的4个解为$\pm x_{k}, \pm\left(2^{k-1}-x_{k}\right)$，则
+$$
+\begin{aligned} & x_{k}^{2}-\left(2^{k-1}-x_{k}\right)^{2} \\=&\left(2 x_{k}-2^{k-1}\right) 2^{k-1} \\ \equiv & x_{k} 2^{k} \quad\left(\bmod\ 2^{k+1}\right) \\ \equiv & 2^{k} \quad\left(\bmod\ 2^{k+1}\right) \end{aligned}
+$$
+于是$x_{k}, 2^{k-1}-x_{k}$中恰有一个可以作为$x_{k+1}$，使得$x_{k+1}^{2} \equiv a\left(\bmod\ 2^{k+1}\right)$。又由$\left(2^{k}-x_{k+1}\right)^{2} \equiv x_{k+1}^{2}\left(\bmod\ 2^{k+1}\right)$即得另外两个解。证毕。
+\end{proof}
+
+\item {\heiti 模奇素数的幂。}$x^{2} \equiv a(\bmod\ q), q=p^{k}, p \nmid a$。当且仅当$a$是$p$的二次剩余时，上式有解。有解时恰有两个解$\pm x_{k}$。
+\begin{proof}
+使用归纳法。若$x_{k}^{2} \equiv a\left(\bmod\ p^{k}\right)$，设
+$$
+\begin{aligned} x_{k+1} &=x_{k}+t p^{k}\left(\bmod\ p^{k+1}\right), t=0,1, \cdots, p-1 \\ x_{k+1}^{2} &=x_{k}^{2}+t^{2} p^{2 k}+2 x_{k} t p^{k} \\ & \equiv x_{k}^{2}+2 x_{k} t p^{k}\left(\bmod\ p^{k+1}\right) \\ & \equiv a\left(\bmod\ p^{k+1}\right) \end{aligned}
+$$
+于是
+$$
+2x_kt\equiv (a-x_k^2)/p^k\ (mod\ p)
+$$
+解出$t$即可得到对应的$x_{k+1}$。
+证毕。
+\end{proof}
+\end{enumerate}
+
+\vbox{}
+
+{\heiti 如果模数是合数，将模数分解后分别计算，再用中国剩余定理合并。}
+
+参考资料：\href{https://max.book118.com/html/2018/0525/168640677.shtm}{jcvb\quad 二次剩余相关}
+
 \section{求解N次剩余}
 
 
