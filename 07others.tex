@@ -53,11 +53,36 @@ $2$和$5$的贡献均来自$10^i$。于是我们记录$q$中$2$的次幂数为$n
 \end{note}
 
 \section{DFS Similar}
-\subsection{反欧拉函数}
-
-\subsection{因子个数最多的数}
+dfs similar是指一类可以“暴力”搜索的问题，这类问题往往有很好的性质使得暴力的时间不会太长。
 
 \subsection{Counting Sequences I(18上海网络赛D)}
+\begin{custom}{问题}
+我们定义一个由正整数组成的序列$a_1,a_2,...,a_n$是好的当：
+\begin{itemize}
+\item $n\ge2$
+\item $a_1+...+a_n = a_1*...*a_n$
+\end{itemize}
+请输出有多少种这样的序列，$2\le n \le 3000$。
+\end{custom}
+
+
+
+
+\subsection{反欧拉函数(洛谷P4780)}
+\begin{custom}{问题}
+求最小的正整数$x$，使得$\phi(x)=n$。输出$x$，如果$x>2^{31}$或者不存在，则输出$-1$。
+\end{custom}
+
+
+
+
+\subsection{因子个数最多的数(51nod1060)}
+\begin{custom}{问题}
+把一个数的约数个数定义为该数的复杂程度，给出一个n，求1-n中复杂程度最高的那个数。如果有多个数复杂度相等，输出最小的。
+$1\le n\le 10^{18}$。
+\end{custom}
+
+
 
 \section{平方数之和}
 
