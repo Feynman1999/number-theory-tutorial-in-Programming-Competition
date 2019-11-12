@@ -315,8 +315,8 @@ $$
 现在我们可以快速计算勒让德符号了（两种方法）。{\heiti 但知道有解还是不够的，往往我们想知道解是什么。}
 
 
-\section{求解2次剩余}
-Cipolla's algorithm是求解2次剩余的经典方法。
+\section{求解二次剩余}
+Cipolla's algorithm是求解二次剩余的经典方法。
 \begin{theorem}{Cipolla's algorithm}{Cipolla}
 现有同余式$x^2\equiv n\ (mod\ p)$，其中$x,n\in \mathcal{F}_p$，$p$是奇素数，$\mathcal{F}_p$是有$p$个元素的有限域：$\{0,1,...,p-1\}$。
 \begin{enumerate}
@@ -458,6 +458,34 @@ $$
 参考资料：\href{https://max.book118.com/html/2018/0525/168640677.shtm}{jcvb\quad 二次剩余相关}
 
 \section{求解N次剩余}
+\begin{custom}{问题}
+	给定$N,a,p$，求出$x^N\equiv a\ (mod \ p)$在模$p$意义下的所有解（其中$p$是素数） 。
+\end{custom}
+
+\begin{solution}
+	如果能找到原根$g$，则$\{1,2,..,.p-1\}$与$\{g^1,g^2,...,g^{p-1}\}$之间就建立了双射关系。
+	
+	令$g^y=x,\ g^t=a$，$x^N\equiv a\ (mod \ p)$ ，则有
+	$$
+	g^{y*N}\equiv g^t  \quad (mod \ p)
+	$$
+	因为$p$是素数，所以方程左右都不会为0。原问题转化为：
+	$$
+	N*y\equiv t\ (mod \ (p-1))
+	$$
+	由于$N,p$已知，则上式为解模线性方程。
+	
+	而$t$的值，由$g^t\equiv a \ (mod\ p)$，用解离散对数的方法求出。
+\end{solution}
+
+输入：$1 \le a, N < p \le 10^9$，$p$为素数。
+
+{\heiti 时间复杂度}  $O(\sqrt{p}log(\sqrt{p}))$  
+\lstinputlisting[language=C++, style=codestyle2]{code04/N-res.cpp}
+{\heiti
+模数非素数：时间和素数一样，甚至更低，因为分解质因数处理的时候规模较小，最后中国剩余定理合并。
+}
+\lstinputlisting[language=C++, style=codestyle2]{code04/N-res-notprime.cpp}
 
 
 \begin{problemset}

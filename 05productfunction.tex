@@ -27,9 +27,365 @@
 
 
 \section{拓展埃氏筛}
-test
+拓展埃氏筛(Extended Eratosthenes Sieve)似乎最早由min25引入竞赛圈(因此也常被称为min25筛)，可以在{\heiti 低于线性的时间}内求得积性函数（一些非积性函数也可以）的前缀和。
+由于其方法简单且灵活性高，近年来经常在算法竞赛中出现，下面就来介绍一下EES。
+
+首先要介绍的是在EES中要使用到的一个前置算法，叫做The Meissel, Lehmer, Lagarias, Miller, Odlyzko Method{\heiti (MLLMO Method)}，论文\cite{Deleglise1996Computing}中
+对其进行了系统介绍，有兴趣的可以继续阅读。
+
+\subsection{MLLMO Method}
+MLLMO Method要解决的是这样一个问题：
+求解
+$$
+\sum_{i=2}^n[i\in Prime]F(i)
+$$
+其中$F(x) = x^k$，即求解
+$$
+\sum_{i=2}^n[i\in Prime]\ i^k
+$$
+设$P_j$表示第$j$个质数，$P_1=2,\ P_2=3\ ...$，特殊地$P_0$可以认为是$0$。
+
+MLLMO Method用动态规划的思想解决这个问题：
+
+设
+$$
+dp(n,j)=\sum_{i=2}^ni^k\ [\ i\in Prime\ or \ min(p)>P_j,\ where\ p|i\ and\ p\in Prime\ ]
+$$
+也就是说$i$是质数，或者合数$i$的最小质因子大于$P_j$时对$dp(n,j)$有贡献。
+
+那$dp(n,0)$即为$\sum_{i=2}^n\ i^k$。下面考虑如何进行转移。
+
+{\heiti 1.假设$P_j^2>n,\ P_{j-1}^2\le n\ $(临界情况)。}
+
+那么对于$dp(n,j)$，$2\sim n$中不存在一个合数，其最小质因子$>P_j$，即$dp(n,j)$的贡献全部来自于$[2,n]$中的质数。
+
+对于$dp(n,j-1)$，$2\sim n$中也不存在一个合数，其最小质因子$>P_{j-1}$，即$dp(n,j-1)$的贡献也全部来自于$[2,n]$中的质数。
+
+即$dp(n,j) = dp(n,j-1)$，对于更大的$j'$，可知贡献还是不变，即$dp(n,j') = dp(n,j)$。
+
+所以我们可以得到一个转移式：
+$$
+dp(n,j) = dp(n,j-1),\quad when\ P_j^2>n
+$$
+
+{\heiti 2.下面考虑$P_j^2\le n$时的情况。}
+
+这个时候$dp(n,j-1)$有非质数的贡献，而$dp(n,j)$，如果考虑临界情况，即$P_{j+1}^2>n$，没有非质数的贡献。
+也就是说$P_j^2\le n$时，从$j-1$到$j$的贡献变少了，即$dp(n,j) = dp(n,j-1) - X$。考虑这个$X$是什么。
+
+显然$X$就是最小质因子是$P_j$的那些合数所造成的贡献。由于这样的合数，每个都有$P_j$作为质因子，我们将$P_j^k$提出，考虑剩下的部分，
+即$dp(n,j) = dp(n,j-1) - P_j^k*X'$。
+
+$X'$是什么呢？$X'$是最小质因子大于等于$P_j$的数（可以是质数）所造成的贡献，并且这些数要$\le \left\lfloor \frac{n}{P_j} \right\rfloor$。 
+于是$X' = dp(\left\lfloor \frac{n}{P_j} \right\rfloor,j-1)-dp(P_j-1,j-1)$。
+
+为什么呢？我们对$X'$造成贡献的数分成合数和质数。其中合数的贡献完全对应了式子中的被减数中的合数贡献(不多不少刚刚好)；而对于质数，我们需要计数的是大于等于$P_j$的那些，
+而被减数中计算了$[2,\ \left\lfloor \frac{n}{P_j} \right\rfloor]$中所有的，于是将多算的质数减去，即减去$dp(P_j-1,j-1)$。(\quad $dp(P_j-1,j-1)$的贡献全来自于
+$[2,P_j-1]$中的质数\quad )
+
+总结一下，转移式如下：
+$$
+dp(n,j)=
+\begin{cases}
+dp(n,j-1)&P_j^2 > n\\
+dp(n,j-1)-P_{j}^k\ *\ [dp(\left\lfloor \frac{n}{P_j} \right\rfloor,j-1)-dp(P_j-1,j-1)]&P_j^2\le n
+\end{cases}
+$$
+
+{\heiti 那我们想要求解的最终答案就是$dp(n,j)$，其中$P_j^2\le n,\ P_{j+1}^2> n$。}
+
+由素数定理知，$j$的量级是$O(\frac{\sqrt{n}}{log\sqrt{n}})$。
+
+\begin{note}
+考虑求$dp(n,j)$单点的时间复杂度是多少？以及如何进行优化。后面我们会看到如何求$2*\sqrt{n}$个$dp$值用于$EES$。
+\end{note}
+
+\subsection{Extended Eratosthenes Sieve}
+\begin{custom}{问题}
+给出一个积性函数$f$，且$f(p)$为关于$p$的多项式，$p\in Prime$。
+求$S(n)=\sum_{i=1}^nf(i)$，$n=10^{12}$。
+\end{custom}
+
+\begin{solution}
+$\forall  \ 2\le i\le n$，我们可以将$i$分为两类：
+\begin{enumerate}
+	\item 第一类数：最大质因子的幂次=1，则其次大质因子$< \sqrt{n}$；
+	\item 第二类数：最大质因子的幂次$>$1 ，则其最大质因子$\le \sqrt{n}$。
+\end{enumerate}
+
+\vbox{}
+
+{\heiti $EES$算法流程如下：}
+\begin{itemize}
+	\item 初始化$S(n)=f(1)$ ，记$M=\left\lfloor \sqrt{n} \right\rfloor$；
+	\item 枚举那些所有质因子均$\le M$的数$k$，设其最大质因子为$L$，则
+	
+	$S(n)+=f(k)\ *\ \sum_{L<p\le \frac n k}f(p), \quad p \ is \ prime $，此时每个$k\cdot p$都对应第一类数，且能覆盖所有第一类数；
+	\item 枚举时，若$k$的最大质因子次幂$>1$，$S(n)+=f(k)$，此时$k$就是一个第二类数，且能覆盖所有第二类数。
+\end{itemize}
+\begin{note}
+	具体实现时采用dfs。此步骤其实算是EES的第二步，第一步需要做一些预处理，即使用上面提到的$MLLMO\ Method$，具体预处理啥呢？往下看。
+\end{note}
+
+\vbox{}
+
+{\heiti 几点说明：}
+\begin{itemize}
+	\item dfs时需要注意，如果对于当前枚举的基数$now$(一开始为1)，有$now*p*p>n$，则不调用$now' = now*p$的$dfs$(\quad 因为$now' * newp > n,\ where\ newp>p$\quad )，同时也不继续枚举当前素数的指数，因为没有贡献了。
+	\item 如果我们可以$O(1)$地求出$\sum_{L<p\le \frac n k}f(p)$，那么上面过程的时间复杂度是$\Theta(n^{1-\omega})$，但是对于$n \leq 10^{13}$
+	这样的数据范围还是很快的。感兴趣的可以阅读2018年集训队论文《一些特殊的数论函数求和问题》---朱震霆。
+	\item 设$g(i)=\sum_{2\le p\le i}f(p),\ p\in Prime$，现在问题只剩下了如何$O(1)$求$\sum_{L<p\le \frac n k}f(p)=g(\lfloor \frac n k\rfloor)-g(L)$。
+	由于$\lfloor \frac n k\rfloor$只有$O(\sqrt{n})$种，$L\le \sqrt{n}$也只有$O(\sqrt{n})$种，因此我们只需要计算$g$的$O(\sqrt{n})$项。
+	在题设里提到了$f(p)$是一个关于$p$的多项式，即$f(p)=\sum a_ip^{k_i}$，我们对于每个$i$，假设$f(p)=p^{k_i}$，最后乘上系数$a_i$再累加就可以得到$ans$。
+	
+	{\heiti 因此现在的问题就是求$\sum_{2\le p\le i}p^{k},\ p\in Prime$，其中$i$分别取$2,3,...,M,\frac{N}{M},\frac{N}{M-1},...,\frac{N}{2},\frac{N}{1}$。
+	$M=\left\lfloor \sqrt{n} \right\rfloor$，除法是下取整。}那这个问题就可以用上面说到的$MLLMO\ Method$。算法流程如下。
+\end{itemize}
+	
+\vbox{}
+	
+{\heiti 使用$MLLMO\ Method$求解$O(\sqrt{N})$个$g$值：}
+
+\begin{itemize}
+	\item 记$2,3,...,M,\frac{N}{M},\frac{N}{M-1},...,\frac{N}{2},\frac{N}{1}$为集合$NS$。对于集合$NS$中的每个数$i$，初始化$Map[i] = \sum_{2\le j\le i}j^k$。
+	当$k$较小时，对于每个$Map[i]$可以由公式$O(1)$求出。{\color{red} // 相当于$dp(i,0)$}
+	\item for p = 2,3,5,7,...(不超过$M$的所有素数，升序)：{\color{red} // 相当于枚举dp中的$j$为$1,2,3...$}
+	
+	\quad \quad for 集合$NS$中的每个元素$i$（降序）：
+	
+	\quad \quad \quad \quad if $p*p\le i$:
+	
+	\quad \quad \quad \quad \quad \quad $Map[i]-=(Map[i/p] - Map[p-1])\ *\ p^k$
+	
+	\quad \quad \quad \quad else break
+	
+	\quad \quad end for
+	
+	end for
+\end{itemize}
+
+\begin{note}
+	这里滚动掉了一维$dp$数组，因此第二维要降序枚举$i$。
+	时间复杂度为$O(\frac {n^{\frac 3 4}}{ log n})$。
+	
+	这一步预处理可看成$EES$的第一步。
+\end{note}
+	
+\vbox{}
+	
+\end{solution}
+
+至此，$EES$介绍完了，总时间复杂度为$O(\frac {n^{\frac 3 4}}{ log n})+\Theta(n^{1-\omega})$。
+
+下面来看一些例题。
+
+\vbox{}
+
+\begin{example}
+	输入一个数$N,\ 2\le N\le 10^{10}$，求$S(n)\ mod\ 1e9+7$。其中$S(n)=\sum_{i=1}^{n}\phi(i)$。(51nod-1239, 欧拉函数前缀和)
+\end{example}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/51nod1239.cpp}
+
+
+
+
+
+\vbox{}
+
+
+
+
+
+\begin{example}
+	输入两个数$a,b,\ 2\le a\le b\le 10^{10}$，求$S(b)-S(a-1)\ mod\ 1e9+7$，即区间值。其中$S(n)=\sum_{i=1}^{n}\mu(i)$。(51nod-1244, 莫比乌斯函数前缀和)
+\end{example}
+ 
+\lstinputlisting[language=C++, style=codestyle2]{code05/51nod1244.cpp}
+
+
+
+
+
+
+\vbox{}
+
+
+
+
+
+\begin{example}
+	定义$\sigma(n)=n$的因子数  ，求$\sum_{i=1}^n\sigma(i^k)  \ mod  \ 2^{64}$。输入两个数$n,k\ ;\ n,k \le 10^{10}$。(\href{https://www.spoj.com/problems/DIVCNTK/}{SPOJ DIVCNTK})      
+\end{example}
+  
+\lstinputlisting[language=C++, style=codestyle2]{code05/DIVCNTK.cpp}
+
+
+
+
+
+
+\vbox{}
+
+
+
+
+\begin{example}
+定义$f(n)=n$的最小质因子，求$\sum_{i=1}^nf(i)   \ mod \ 2^{64}$，$1\le N\le 1234567891011$。   
+(\href{https://www.spoj.com/problems/APS2/}{SPOJ APS2})
+\end{example}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/APS2.cpp}
+
+\begin{note}
+	同样，也可以求最大质因子，\href{https://projecteuler.net/problem=642}{projecteuler-642}。说明了EES对非积性函数的可行性。
+\end{note} 
+ 
+ 
+ 
+ 
+\vbox{}
+
+
+
+
+\begin{example}
+输入一个数$N$，输出第$N$个素数。$1\le N\le 10^9$。 时间限制：$2.6s$。
+(\href{https://www.spoj.com/problems/NTHPRIME/en/}{SPOJ NTHPRIME})
+\end{example}
+
+\begin{solution}
+	使用二分答案 + MLLMO Method，时间复杂度为$O(\frac {n^{\frac 3 4}}{ log n} * log n)$。由于常数比较大，可以固定二分次数上限，剩下的部分用区间素数筛法或者$miller-rabin$。
+	
+	下面的代码使用的是$miller-rabin$。{\heiti 实际上区间素数筛速度更快，$1e7$长度的可筛区间，只要不到1$s$的时间，而$miller-rabin$常数比较大。}
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/nthprime.cpp}
+
+\begin{note}
+考虑这题有没有更快的算法，时间主要花在二分时多次$MLLMO$上！如果能从数学上找到一个估计函数，先大致估计一下结果，然后再微调，就只要做一次$MLLMO$。
+下面尝试寻找这样的估计函数进行优化。
+\end{note}
+
+\vbox{}
+
+论文\cite{1002.0442}中给出了这样一组上下界：
+
+$$
+\begin{aligned} \pi(x) & \geqslant \frac{x}{\ln x}\left(1+\frac{1}{\ln x}+\frac{2}{\ln ^{2} x}\right) \quad \text { for } x \geqslant 88783 \\ \pi(x) & \leqslant \frac{x}{\ln x}\left(1+\frac{1}{\ln x}+\frac{2.334}{\ln ^{2} x}\right) \quad \text { for } x \geqslant 2953652287 \end{aligned}
+$$
+其中$\pi(x)$表示$1\sim x$中素数的个数。这样对于输入所给的$\pi(x)$，我们分别用两个估计函数解出$x$(看做等号)，即可得到一个估计的范围$[L,R]$。然后只需要对$L$这一点做一次$MLLMO$，对区间$[L,R]$做大区间素数筛，
+最后遍历一遍统计即可。至于如何解这两个方程，二分即可。
+
+对于单组询问$n,\ n\le 10^9$，本机测试不超过$150ms$。
+\lstinputlisting[language=C++, style=codestyle2]{code05/nthprime2.cpp}
+
+
+
+
+\vbox{}
+
+
+
+
+
+
+\begin{example}
+	print the last prime P such that $\sum_{i=2}^Pi,\ where\ i \ is\ prime = S$。 时间限制：$3s$。
+	
+	The lonely line of input contains an integer S.$\ 0 < P <= 10^{12}$.
+	
+	(\href{https://www.spoj.com/problems/SUMPRIM2/}{SPOJ Sum of primes (reverse mode)})
+\end{example}
+\begin{solution}
+	直接想法，和上一题一开始一样，直接二分答案，使用$log$次$MLLMO$，但由于$MLLMO$是求素数和而不是素数个数，所以多了乘法以及要使用$\_\_int128$，导致常数更大了。
+	这种思路肯定是过不了。
+	
+	考虑寻找两个函数对答案上下界进行估计，记$S(x)$为$1\sim x$中所有素数的和。论文\cite{Axler2014On}中给出了这样一组上下界：
+	$$
+	\begin{aligned} S(x) & > \frac{x^2}{2logx} + \frac{x^2}{4log^2x} + \frac{x^2}{4log^3x} + \frac{1.2x^2}{8log^4x} \quad \text { for } x \geqslant 905238547 \\ S(x) & < \frac{x^2}{2logx} + \frac{x^2}{4log^2x} + \frac{x^2}{4log^3x} + \frac{5.3x^2}{8log^4x} \quad \text { for } x \geqslant 110118925 \end{aligned}
+	$$
+	然后就是和上一题一样的流程。对于$P=10^{12}$的极限情况，估计的范围长度最坏在$2.5*1e7$以内，可以区间素数筛。
+	
+	\lstinputlisting[language=C++, style=codestyle2]{code05/sum-of-primes.cpp}
+\end{solution}
+
+\vbox{}
+
+\begin{note}
+	总结一下，$2s$内可解决的问题：
+		\begin{table}[!htbp]
+			\centering
+			\caption{关于素数问题的总结 \label{tab:summaryforprime}}
+			\begin{spacing}{1}
+				\begin{tabular}{|c|c|c|}
+					\toprule[1pt]
+					问题 & 范围 & 方法 \\
+					\midrule[1.5pt]
+					\tabincell{c}{求$1\sim n$中素数个数 \\ (给一个素数$p$，判断是第几个素数)} &   $n= 1e12$ &  $MLLMO$ \\
+					\midrule[1pt]
+					求$1\sim n$中素数的和 &  $n=1e12$ & $MLLMO$  \\
+					\midrule[1pt]
+					求第$n$个素数  &  $n=1e9 $ &  $\pi(x)$估计 + $MLLMO$ \\
+					\midrule[1pt]
+					\tabincell{c}{给一个$S$，保证是素数的前缀和， \\ 求组成$S$的最后一个素数$p$}  &   $p=1e12$ &  $S(x)$估计 + $MLLMO$ \\
+					\bottomrule[1pt]
+				\end{tabular}%
+			\end{spacing}
+		\end{table}%
+\end{note}
+
+\vbox{}
+
+
+\begin{example}
+	For $n=p_1^{k_1}p_2^{k_2}...p_m^{k_m}$, $\ $define$f(n)=k_1 + k_2 + ... + k_m$，$\ $please calculate $\sum_{i=1}^n f(i!)\ \%998244353$。
+	输入一个$n$, $1\le n \le 10^{10}$。
+	(\href{https://nanti.jisuanke.com/t/41390}{2019徐州网络赛H})
+\end{example}
+\begin{solution}
+	显然$f(pq) = f(p) + f(q)$。
+\end{solution}
+
+
+
+
+
+\vbox{}
+
+
+
+
+\begin{example}
+	$f(n,k)$ is the number of way to select $k$ numbers $a_i$,$\ a_i>1$ and $\prod_{i=1}^{k} a_{i} = n$。
+	solve $\sum_{i = 1} ^ {n} f(i,k)$ after mod 1e9+7.$\ $Note that if n=6, 6=2*3 and 6=3*2 are different way.
+	
+	Input one line contains two integers $n,k\ (1\le n\le 2^{30},1\le k\le 30)$.
+	
+	(\href{http://acm.hdu.edu.cn/showproblem.php?pid=6537}{2019ccpc湖南全国邀请赛 F.Neko and function})
+\end{example}
+
+\begin{solution}
+	考虑$f$函数如何计算，发现不是积性函数而且不好计算。
+	考虑另外一个函数$g$，和$f$的区别只是限制条件$a_i>1$变为$a_i\ge 1$，这个时候考虑$g(n,k)$如何求解以及$f$和$g$之间的关系。
+	\begin{itemize}
+		\item 考虑$f$和$g$之间的关系，显然$g$的情况是不小于$f$的，考虑多的部分，其实就是有$a_i=1$的情况。自然想到枚举哪个位置放1，剩下的用$g$继续表示，即$f(n,k) = g(n,k) - C_k^1*g(n,k-1)$。 但发现其实多减去了，因为后面那个部分统计显然有重复，重复的就是$C_k^2*g(n,k-2) - C_k^3*g(n,k-3)+....$   
+		
+		也就是要容斥一下，即$f(n,k) = \sum_{i=0}^k(-1)^i*C_k^i*g(n,k-i)$。  
+		
+		由于$k$只有30，这个时候祈祷$g$是积性函数，ees就结束了。确实是。
+		\item 考虑函数$g(n,k)$，将$n$质因子分解，可知{\heiti 不同质因子贡献是满足积性的}。而对于$g(p^e,k)$，对应于$e$个球，$k$个盒子，球没有区别，位置（盒子）有区别的放球模型（可以有空盒）。即$g(p^e,k) = C_{e+k-1}^{k-1}$  （$k-1$个插板 ，$e+k-1$个位置）。
+	\end{itemize}
+	
+	最多30次ees即可。注意特判$n=1$的情况。
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/Neko-and-function.cpp}
+
+
 
 \section{rng58-clj等式}
+
 
 
 \begin{problemset}

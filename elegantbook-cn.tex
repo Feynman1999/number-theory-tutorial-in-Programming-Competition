@@ -14,7 +14,7 @@
 \cover{cover.jpg}
 
 \usepackage{xcolor}
-
+\usepackage{enumitem}
 
 \colorlet{mygray}{black!30}
 \colorlet{mygreen}{green!60!blue}
@@ -45,7 +45,7 @@
 	tabsize=4,                 
 	title=\lstname
 }
-
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
 \begin{document}
 	
 \maketitle
@@ -68,7 +68,6 @@
 \appendix
 
 \include{app1}
-\include{app2}
 
 
 \end{document}

@@ -197,6 +197,24 @@ $$
 
 {\heiti 使用费马小定理还可以进行素数测试}，后面小节会提到。
 
+\vbox{}
+
+\begin{note}
+	如果要求$1,2,3,...,n$所有数的逆元，除了每个单独求之外，实际上还有线性的做法。
+	
+	设$p=ki+b$ ，那么$ki+b\equiv 0 \ (mod\  p)$。 
+	
+	两边同乘以$i^{-1}，b^{-1}$ 得到$kb^{-1}+i^{-1}\equiv 0 \  (mod\ p)$，$i^{-1}\equiv -kb^{-1}$，于是有：
+	
+	$$i^{-1}\equiv -\lfloor\frac{p}{i}\rfloor * (p\%i)^{-1} \quad (mod\ p)$$
+	
+	通常在前面加上$p$，变为正数：
+	$$i^{-1}\equiv (p-\lfloor\frac{p}{i}\rfloor) * (p\%i)^{-1} \quad (mod\ p)$$
+	
+	代码：预处理$1\sim n$的逆元、阶乘和阶乘逆元。时间复杂度为线性。
+	\lstinputlisting[language=C++, style=codestyle2]{code03/linearinverse.cpp}
+\end{note}
+
 \section{中国剩余定理}
 
 \begin{theorem}{中国剩余定理}{CRT}

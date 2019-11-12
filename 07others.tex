@@ -1,14 +1,233 @@
 \chapter{其他}
 \begin{introduction}[本章内容提要]
-	\item xxx
+	\item 勾股数组
+	\item 圆上整点与高斯素数
+	\item 模线性方程循环节
+	\item 分数转小数
+	\item DFS Similar
+	\item FFT, NTT
+	\item 多项式相关
 \end{introduction}
 
 \section{勾股数组}
 
-\section{循环节问题}
-\subsection{模线性方程循环节}
 
-\subsection{斐波那契循环节}
+- $m$能表示成$m=a^2+b^2$，且$gcd(a,b)=1$，当且仅当以下两个条件之一成立：
+
+1. $m$是奇数，且$m$的每个素因子都模4余1
+
+2. $m$是偶数，$m/2$是奇数且$m/2$的每个素因子都模4余1
+
+\vbox{}
+
+回顾一下，本原勾股数组
+
+**定理2.1 （勾股数组定理）.**  每个本原勾股数组（a,b,c)（a为奇数，b为偶数)都可从如下公式得出：
+$$
+a=st ,\quad  b=\frac{s^2-t^2}{2},\quad  c=\frac{s^2+t^2}{2}
+$$
+其中s>t>=1是任意没有公因数的奇数，即互质的奇数
+
+\vbox{}
+
+有以上两条定理可知，$c$是一个本原勾股数组的斜边当且仅当方程
+$$
+2c=s^2+t^2
+$$
+{\heiti 有互素的奇整数解$s,t$ }
+
+且有如下命题
+
+{\heiti 毕达哥拉斯斜边命题}  $c$是一个本原勾股数组斜边的充要条件是$c$ 是模4余1的素数的乘积。
+
+
+
+\section{平方数之和、圆上整点}
+这一节要解决的问题是给定一个数$x$，判断它能否分解为两个整数的平方之和，以及具体来说如何分解。从几何意义上考虑就是以原点为圆心，$\sqrt{x}$为半径的圆，是否经过坐标点(横纵坐标都是整数)，
+以及具体是哪些点。
+
+先从$x$为素数考虑，这个时候规律相对简单。
+\subsection{将素数分解为平方之和}
+
+\begin{theorem}{定理}{primesquare}
+	设$p$是素数，则$p$是两平方数之和的充要条件是$p\equiv 1 \ (mod \ 4)   $ 或$p=2$。
+\end{theorem}
+
+\begin{proof}
+这里有两个断言：
+\begin{itemize}
+	\item $p$是两平方数之和；
+	\item $p\equiv 1\ (mod\ 4)$ 或者 $p=2$。
+\end{itemize}
+
+要证明充要性有两个方面，即用一个断言作为条件去证明另外一个，下面分别证明。
+\begin{enumerate}
+	\item 若$p$是两平方数之和，则$-a^2\equiv b^2 (mod \ p)$ ，接着对两边取勒让德符号：（回顾第四章的内容）
+	\begin{align*}
+	\left(\frac{-1}{p}\right)\left(\frac{a}{p}\right)^2&=\left(\frac{b}{p}\right)^2 \\
+	\left(\frac{-1}{p}\right)&=1
+	\end{align*}
+	于是由二次互反律知，$p$模4余1或者$p=2$。$\square$
+	\item 当$p\equiv 1\ (mod\ 4)$或$p=2$时，要证明$p$一定可以表示成两平方数之和。也就是说只要我们能想到一种方法总能找到如何分解，就完成了证明。下面介绍一种方法，
+	称之为{\heiti 费马降阶法(Fermat Descent Procedure)}。我们后面的代码就是基于此方法。
+	
+	我们从$A^2+B^2=Mp$开始，如果这里$M=1$，则证明完毕。所以我们考虑$M\ge 2$。
+	费马的想法是，我们用现有的$A,B,M$，要是能构造出$a^2+b^2=mp \ \&\&\ m\le M-1$,
+	则迭代下去，$m=1$时就完成了构造。
+
+	在说具体的构造方法之前，先看一个恒等式，其正确性是显然的,在下面的构造过程中，这个恒等式起到关键作用。
+	$$
+	(u^2+v^2)(A^2+B^2)=(uA+vB)^2+(vA-uB)^2
+	$$
+	费马降阶法的过程如表\ref{tab:fermat-descent}所示：
+	\begin{table}[!htbp]
+		\centering
+		\caption{费马降阶法 \label{tab:fermat-descent}}
+		\begin{spacing}{1.5}
+			\begin{tabular}{|c|c|}
+				\toprule[1pt]
+				举例(p=881) & 符号表示\quad p any prime $\equiv$ 1($mod\ 4$) \\
+				\midrule[2pt]
+				有$387^2+1^2=170*881$,$\ 170<881$ & 有$A^2+B^2=Mp$,$\ M<p$\\
+				\midrule[1pt]
+				\tabincell{c}{求得数$47,\ 1$使得\\$47\equiv 387\ (mod\ 170)$\\ $1\equiv 1\ (mod\ 170)$ \\ 其中$-\frac{170}{2}\le 47,1\le \frac{170}{2}$}  & 
+				\tabincell{c}{求得数$u,\ v$使得\\$u\equiv A\ (mod\ M)$\\ $v\equiv B\ (mod\ M)$ \\ 其中$-\frac{M}{2}\le u,v\le \frac{M}{2}$}  \\
+				\midrule[1pt]
+				\tabincell{c}{于是有\\$47^2+1^2\equiv 387^2+1^2\equiv 0\ (mod\ 170)$}  & 
+				\tabincell{c}{于是有\\$u^2+v^2\equiv A^2+B^2\equiv 0\ (mod\ M)$}  \\
+				\midrule[1pt]
+				\tabincell{c}{所以可写\\$47^2+1^2 = 170*13$ \\ $387^2+1^2 = 170*881$} & 
+				\tabincell{c}{所以可写\\$u^2+v^2 = Mr(1\le r< M)$ \\ $A^2+B^2 = Mp$}  \\
+				\midrule[1pt]
+				\tabincell{c}{相乘可得\\$(47^2+1^2)(387^2+1^2) = 170^2*13*881$} & 
+				\tabincell{c}{相乘可得\\$(u^2+v^2)(A^2+B^2) = M^2*r*p$}  \\
+				\midrule[1pt]
+				\multicolumn{2}{|c|}{利用恒等式$	(u^2+v^2)(A^2+B^2)=(uA+vB)^2+(vA-uB)^2 $} \\
+				\midrule[1pt]
+				\tabincell{c}{$(47*387+1*1)^2 + (1*387 - 47*1)^2$ \\ $=170^2*13*881$ \\ 所以$18190^2 + 340^2 = 170^2*13*881$} & 
+				\tabincell{c}{$(uA+vB)^2+(vA-uB)^2 = M^2*r*p$}  \\
+				\midrule[1pt]
+				\tabincell{c}{两边同除以$170^2$得 \\ $(\frac{18190}{170})^2 + (\frac{340}{170})^2 = 13*881$ \\ $107^2 + 2^2 = 13*881$} & 
+				\tabincell{c}{两边同除以$M^2$得 \\ $(\frac{uA+vB}{M})^2 + (\frac{vA-uB}{M})^2 = rp$ \\ (肯定可以整除) }  \\
+				\midrule[1pt]
+				\multicolumn{2}{|c|}{由此得到能表示成两平方数之和的$p$的更小倍数} \\
+				\midrule[1pt]
+				\multicolumn{2}{|c|}{重复上述过程，直到$p$本身能表成两平方数之和$(r=1)$} \\
+				\bottomrule[1pt]
+			\end{tabular}%
+		\end{spacing}
+	\end{table}%
+	
+	可以发现，每迭代一次，$p$的系数至少减半，即迭代次数为$O(logp)$次。为了说明上述过程的正确性，我们还要证明5个断言的正确性。
+	\begin{enumerate}
+		\item 一定可以找出数$A,B$，使得$A^2+B^2=Mp$，且$M<p$ 。
+		\begin{proof}
+			取同余式$x^2\equiv -1\ (mod \ p)$的一个解，由二次互反律知，当$p\%4=1$时，必定有解$x$。所以取
+			$A=x,B=1$具有性质$p\ | \ A^2+B^2$，而且$M=\frac{A^2+B^2}{p}\le \frac{(p-1)^2+1^2}{p}<p$。
+			$\square$ 
+		\end{proof}
+	\end{enumerate}
+
+
+	在降阶程序的第二步，我们选取$u,v$使其满足
+	$$
+	u\equiv A (mod \ M),\quad v\equiv B(mod \ M), \quad -\frac{1}{2}M\le u,v\le \frac{1}{2}M
+	$$
+	于是有
+	$$
+	u^2+v^2\equiv A^2+B^2\equiv 0 \quad (mod \ M )
+	$$
+	设$u^2+v^2=rM$，其余四个断言如下：
+	\begin{enumerate}[resume] % tell the enumerate to resume numbering
+		\item $r\ge1$
+		\item $r<M$ 
+		\item $uA+vB$能被$M$整除
+		\item $vA-uB$能被$M$整除
+	\end{enumerate}
+	这四个断言比较容易证明，这里不再给出。$\square$
+\end{enumerate}
+	至此，对定理\ref{thm:primesquare}的证明结束。$\square$
+\end{proof}
+
+\vbox{}
+
+上面求解过程中关键的一步是求解$x^2\equiv -1 \ (mod \ p)$，可以直接使用二次剩余的模板，也可以使用随机算法。
+即随机一个$a∈[1,p-1]$ ，求解$b\equiv a^{(p-1)/4}\ (mod\ p)$，由欧拉准则可知$b^2\equiv (\frac{a}{p}) \ (mod\ p)$，
+即若选取的$a$不是$p$的二次剩余（有一半的概率），则求得的$b$即为解$x$。由二次剩余性质知有两个解$x_1,x_2$，且$x_1+x_2=p$。
+
+代码如下：
+\lstinputlisting[language=C++, style=codestyle2]{code07/random-algo-modsqr.cpp}
+
+现在我们可以将素数分解为平方数之和了，下面看一下对于一般数该怎么做。
+
+\subsection{将数分解为平方之和}
+这一节的内容，不打算给出相关证明，而是给出一些结论和代码。因为我觉得下面这个视频已经讲的不错了，\href{https://www.bilibili.com/video/av12131743}{bilibili: 隐藏在素数规律中的$\pi$}。
+
+\begin{theorem}{圆上整点数定理}{label}
+	定义函数$\chi(n)$如下：
+	\begin{align*}
+		\chi(n) = \left\{\begin{matrix}
+		1&  \quad  n\%4==1\\
+		-1  & \quad  n\%4==3 \\
+		0 &\quad   n\%4==0\ or\ 2
+		\end{matrix}\right. \quad\quad n>0
+	\end{align*}
+	对于半径为$\sqrt{N}$的圆，圆上整点的数目(即将$N$分成两个平方数之和的方案数)可以这样计算：
+	
+	将$N$质因数分解：
+	$$
+	N = p_1^{k_1}*p_2^{k_2}*...*p_m^{k_m}
+	$$
+	则圆上整点数目 = $4*\Pi_{i=1}^{m}(\sum_{j=0}^{k_i}\chi(p_i^j))$。
+	
+	上面的这个式子只是为了统一，所以看起来规律不明显。实际上一句话：
+	
+	如果有模4余3的素数的指数为奇数答案为0，否则就是所有模4余1的素数的指数加1后乘起来最后再乘4。
+\end{theorem}
+
+\vbox{}
+
+至于具体如何计算分解的方案，推荐大家看上面那个视频。大致思路就是对于可分解的素数利用费马降阶法进行分解，然后再在复数域中对不同质数
+的结果组合计算一下。下面给出代码：
+
+输入一个半径$r$，输出在圆上的所有整点。
+
+{\heiti 时间复杂度：$O(A+B)$，其中$A$为质因子分解$r^2(thus\ r)$的时间，$B$为圆上整点数。
+
+该代码在$r\le 10^9$时通过测试，更大时注意下会不会爆范围。}
+\lstinputlisting[language=C++, style=codestyle2]{code07/Lattice-points.cpp}
+
+
+
+
+
+
+\section{循环节问题}
+\subsection{二阶常系数齐次线性递推循环节}
+先将模数分解，在模素数幂意义下分别求循环节，最后取最小公倍数即可。而对于模素数幂有结论$G(p_i^{a_i}) = p_i^{a_1-1}G(p_i)$。
+
+所以问题转为模素数如何处理。即给定$a,b,f(1),f(2)$，且满足$f(n)=a*f(n-1) + b*f(n-2)$。求$f(n)\ mod\ p$的循环节。
+
+写成矩阵形式，如下：
+$$
+\left[\begin{array}{c}{f(n)} \\ {f(n-1)}\end{array}\right]=\left[\begin{array}{cc}{a} & {b} \\ {1} & {0}\end{array}\right]\left[\begin{array}{c}{f(n-1)} \\ {f(n-2)}\end{array}\right]
+$$
+
+变形一下：
+$$
+\left[\begin{array}{c}{f(n+2)} \\ {f(n+1)}\end{array}\right]=\left[\begin{array}{cc}{a} & {b} \\ {1} & {0}\end{array}\right]^{n}\left[\begin{array}{c}{f(2)} \\ {f(1)}\end{array}\right]
+$$
+那么现在的问题就转化为求最小的$n$，使得
+$$
+\left[\begin{array}{ll}{a} & {b} \\ {1} & {0}\end{array}\right]^{n}(\bmod p)=\left[\begin{array}{ll}{1} & {0} \\ {0} & {1}\end{array}\right]
+$$
+结论：设$c=a^2+4b$, 有两种情况：
+\begin{enumerate}
+	\item 若$c$是模$p$的二次剩余，则$n$是$p-1$的因子；
+	\item 若$c$不是模$p$的二次剩余，则$n$是$(p+1)(p-1)$的因子
+\end{enumerate}
+所以只要枚举因子并判断即可。
+时间复杂度$O(T*2^3*log(p))$，其中$T$为$p-1$或$(p+1)(p-1)$的因子数目。
 
 \subsection{分数小数的循环节}
 \begin{custom}{问题}
@@ -34,7 +253,7 @@ $2$和$5$的贡献均来自$10^i$。于是我们记录$q$中$2$的次幂数为$n
 
 \href{https://www.luogu.org/problem/P1530}{luogu P1530 分数化小数}
 
-时间复杂度：$\sqrt{q}*log(q)$ \quad （确定i,j）
+时间复杂度：$\sqrt{q}*log(q)$ \quad （确定i, j）
 
 输出格式： 按照下面规则，如果结果长度大于76,每行输出76个字符。
 \begin{itemize}
@@ -78,18 +297,25 @@ dfs similar是指一类可以“暴力”搜索的问题，这类问题往往有
 
 \subsection{因子个数最多的数(51nod1060)}
 \begin{custom}{问题}
-把一个数的约数个数定义为该数的复杂程度，给出一个n，求1-n中复杂程度最高的那个数。如果有多个数复杂度相等，输出最小的。
+把一个数的约数个数定义为该数的复杂程度，给出一个n，求$1\sim n$中复杂程度最高的那个数。如果有多个数复杂度相等，输出最小的。
 $1\le n\le 10^{18}$。
 \end{custom}
 
+即给定$N$，求$[1,N]$之间最大的反素数**（即拥有因子数目最多的数）**
+
+性质:
+\begin{itemize}
+	\item 一个反素数的质因子必然是从2开始连续的质数。 
+	\item $p=2^{t_1} * 3^{t_2} * 5^{t_3} * 7^{t_4}$...必然t1>=t2>=t3>=...
+\end{itemize}
+
+暴力dfs    时间复杂度大概几个log
+
+\lstinputlisting[language=C++, style=codestyle2]{code07/mostfactors.cpp}
 
 
-\section{平方数之和}
-
-\subsection{将数分解为平方之和}
 
 
-\subsection{将素数分解为平方之和}
 
 \section{FFT 与 NTT}
 
