@@ -344,7 +344,17 @@ $$
 	(\href{https://nanti.jisuanke.com/t/41390}{2019徐州网络赛H})
 \end{example}
 \begin{solution}
-	显然$f(pq) = f(p) + f(q)$。
+	注意函数$f(x)$虽然不满足积性，但是也有很好的性质：$f(pq) = f(p) + f(q)$。这样所求的式子可以化简为$\sum_{i=1}^n g(i)$，其中$g(i)=(n-i+1)*f(i)$。
+	$n$的量级是$1e10$，考虑如何$EES$。
+	
+	dfs时参数要有$f$(即当前数$k$的$f(k)$值)，$k$(当前的数)。具体记贡献如下：
+	\begin{itemize}
+		\item 对于最大质因子指数为1的贡献：$\sum_{p}\left[n-k p_{i}+1\right][f(k)+f(p)]=[f(k)+1] *\left[\sum(n+1) * 1-k * \sum\left(p_{i}\right)\right]$。也就是
+		说我们需要$MLLMO$预处理素数个数前缀和以及素数前缀和。
+		\item 对于最大质因子指数>1的数(比如数$i$)的贡献：直接就用$g(i)=f(i)*(n-i+1)$计算。其中$i$和$f(i)$边乘边维护下即可(分别乘$p$和加1)。
+	\end{itemize}
+
+	\lstinputlisting[language=C++, style=codestyle2]{code05/function.cpp}
 \end{solution}
 
 
