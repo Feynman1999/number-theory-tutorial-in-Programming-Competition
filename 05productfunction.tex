@@ -182,7 +182,8 @@ $\forall  \ 2\le i\le n$，我们可以将$i$分为两类：
 \vbox{}
 
 \begin{example}
-	输入一个数$N,\ 2\le N\le 10^{10}$，求$S(n)\ mod\ 1e9+7$。其中$S(n)=\sum_{i=1}^{n}\phi(i)$。(51nod-1239, 欧拉函数前缀和)
+	输入一个数$N,\ 2\le N\le 10^{10}$，求$S(n)\ mod\ 1e9+7$。其中$S(n)=\sum_{i=1}^{n}\phi(i)$。
+	\href{https://www.51nod.com/Challenge/Problem.html#problemId=1239}{(51nod-1239, 欧拉函数前缀和)}
 \end{example}
 
 \lstinputlisting[language=C++, style=codestyle2]{code05/51nod1239.cpp}
@@ -198,7 +199,8 @@ $\forall  \ 2\le i\le n$，我们可以将$i$分为两类：
 
 
 \begin{example}
-	输入两个数$a,b,\ 2\le a\le b\le 10^{10}$，求$S(b)-S(a-1)\ mod\ 1e9+7$，即区间值。其中$S(n)=\sum_{i=1}^{n}\mu(i)$。(51nod-1244, 莫比乌斯函数前缀和)
+	输入两个数$a,b,\ 2\le a\le b\le 10^{10}$，求$S(b)-S(a-1)\ mod\ 1e9+7$，即区间值。其中$S(n)=\sum_{i=1}^{n}\mu(i)$。
+	\href{https://www.51nod.com/Challenge/Problem.html#problemId=1244}{(51nod-1244, 莫比乌斯函数前缀和)}
 \end{example}
  
 \lstinputlisting[language=C++, style=codestyle2]{code05/51nod1244.cpp}
@@ -307,8 +309,9 @@ $$
 	$$
 	然后就是和上一题一样的流程。对于$P=10^{12}$的极限情况，估计的范围长度最坏在$2.5*1e7$以内，可以区间素数筛。
 	
-	\lstinputlisting[language=C++, style=codestyle2]{code05/sum-of-primes.cpp}
 \end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/sum-of-primes.cpp}
 
 \vbox{}
 
@@ -337,12 +340,12 @@ $$
 
 \vbox{}
 
-
 \begin{example}
 	For $n=p_1^{k_1}p_2^{k_2}...p_m^{k_m}$, $\ $define$f(n)=k_1 + k_2 + ... + k_m$，$\ $please calculate $\sum_{i=1}^n f(i!)\ \%998244353$。
 	输入一个$n$, $1\le n \le 10^{10}$。
 	(\href{https://nanti.jisuanke.com/t/41390}{2019徐州网络赛H})
 \end{example}
+
 \begin{solution}
 	注意函数$f(x)$虽然不满足积性，但是也有很好的性质：$f(pq) = f(p) + f(q)$。这样所求的式子可以化简为$\sum_{i=1}^n g(i)$，其中$g(i)=(n-i+1)*f(i)$。
 	$n$的量级是$1e10$，考虑如何$EES$。
@@ -353,16 +356,13 @@ $$
 		说我们需要$MLLMO$预处理素数个数前缀和以及素数前缀和。
 		\item 对于最大质因子指数>1的数(比如数$i$)的贡献：直接就用$g(i)=f(i)*(n-i+1)$计算。其中$i$和$f(i)$边乘边维护下即可(分别乘$p$和加1)。
 	\end{itemize}
-
-	\lstinputlisting[language=C++, style=codestyle2]{code05/function.cpp}
 \end{solution}
 
-
+\lstinputlisting[language=C++, style=codestyle2]{code05/function.cpp}
 
 
 
 \vbox{}
-
 
 
 
@@ -391,6 +391,30 @@ $$
 \end{solution}
 
 \lstinputlisting[language=C++, style=codestyle2]{code05/Neko-and-function.cpp}
+
+\vbox{}
+
+\begin{example}
+	题意转化后：
+	函数$f$是积性函数，且$f(p^k) = (p\%4==1) \ ?\ 3k+1 : 1$。求$\sum_{i=1}^n f(i)$，其中$n\le 10^9$。
+	(\href{https://ac.nowcoder.com/acm/contest/887/K}{2019牛客暑期多校训练营第七场 K.Function})
+\end{example}
+
+\begin{solution}
+可以看到根据$p\%4$的值的不同，计算方法不同，这时候怎么办呢？对于大于$2$的素数$p$，$p$模4为1或3。如果我们能分别预处理它们的前缀，那么问题就得到了解决。
+首先我们引入一个函数$\chi(n)$如下：
+\begin{align*}
+\chi(n) = \left\{\begin{matrix}
+1&  \quad  n\%4==1\\
+-1  & \quad  n\%4==3 \\
+0 &\quad   n\%4==0\ or\ 2
+\end{matrix}\right. \quad\quad n>0
+\end{align*}
+$\chi(n)$是一个积性函数，所以我们在$MLLMO$的时候可以乘上这个函数，这样我们就可以预处理出$1\sim n$中$\%4=1$的素数减去$\%4=3$的素数的个数(那些前缀们)。由于我们可以
+方便地预处理出$1\sim n$中$\%4=1$的素数加上$\%4=3$的素数的个数(那些前缀们，也就是所有素数，就像最常做的那样)，所以就能推出$1\sim n$中模4余1的素数个数了。
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/nowcode-Function.cpp}
 
 
 
