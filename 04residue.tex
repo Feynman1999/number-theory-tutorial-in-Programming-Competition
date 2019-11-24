@@ -478,15 +478,30 @@ $$
 	而$t$的值，由$g^t\equiv a \ (mod\ p)$，用解离散对数的方法求出。
 \end{solution}
 
-输入：$1 \le a, N < p \le 10^9$，$p$为素数。
+输入：$1 \le a,\ N < p \le 10^9$，$p$为素数。
 
-{\heiti 时间复杂度}  $O(\sqrt{p}log(\sqrt{p}))$  
+{\heiti 时间复杂度}  $O(\sqrt{p}log(\sqrt{p}))$ 
+
 \lstinputlisting[language=C++, style=codestyle2]{code04/N-res.cpp}
-{\heiti
+
+{\heiti 如果模数是非素数呢？}
+
 模数非素数：时间和素数一样，甚至更低，因为分解质因数处理的时候规模较小，最后中国剩余定理合并。
-}
 \lstinputlisting[language=C++, style=codestyle2]{code04/N-res-notprime.cpp}
 
+\begin{example}
+	已知$x^{2^{30}+3}\ mod\ n = c$，给定$c,n$，其中$n$是两个相邻素数($p \in [10^5, 10^9]$)的乘积。求解$x$，题目保证在模意义下只有一个解。
+	$10^5$组测试数据。
+	(\href{https://codeforces.com/gym/102055/problem/K}{CCPC2018-Final Mr. Panda and Kakin})
+\end{example}
+
+\begin{solution}
+	注意到这里$2^{30}+3$和$\phi(n)$一定互质，所以可以直接求$2^{30}+3$模$\phi(n)$下的逆元，最后两边做逆元次方即得答案。
+	
+	注意要使用$O(1)$快速乘，否则超时。
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code04/Kakin.cpp}
 
 \begin{problemset}
 	\item \href{https://www.luogu.org/problem/P5491}{二次剩余 \quad 洛谷P5491 \quad 模板}
