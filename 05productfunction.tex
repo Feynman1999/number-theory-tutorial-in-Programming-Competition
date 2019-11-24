@@ -403,6 +403,7 @@ $$
 \begin{solution}
 可以看到根据$p\%4$的值的不同，计算方法不同，这时候怎么办呢？对于大于$2$的素数$p$，$p$模4为1或3。如果我们能分别预处理它们的前缀，那么问题就得到了解决。
 首先我们引入一个函数$\chi(n)$如下：
+
 \begin{align*}
 \chi(n) = \left\{\begin{matrix}
 1&  \quad  n\%4==1\\
@@ -410,17 +411,25 @@ $$
 0 &\quad   n\%4==0\ or\ 2
 \end{matrix}\right. \quad\quad n>0
 \end{align*}
+
 $\chi(n)$是一个积性函数，所以我们在$MLLMO$的时候可以乘上这个函数，这样我们就可以预处理出$1\sim n$中$\%4=1$的素数减去$\%4=3$的素数的个数(那些前缀们)。由于我们可以
 方便地预处理出$1\sim n$中$\%4=1$的素数加上$\%4=3$的素数的个数(那些前缀们，也就是所有素数，就像最常做的那样)，所以就能推出$1\sim n$中模4余1的素数个数了。
 \end{solution}
 
+
 \lstinputlisting[language=C++, style=codestyle2]{code05/nowcode-Function.cpp}
 
 
+\begin{note}
+	考虑有没有其他方法，比如直接从$MLLMO$的转移式考虑。
+\end{note}
 
 \section{rng58-clj等式}
 
 
+\vbox{}
+
+\vbox{}
 
 \begin{problemset}
 	\item xx
