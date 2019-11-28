@@ -181,7 +181,7 @@
 
 该代码在$r\le 10^9$时通过测试，更大时注意下会不会爆范围。}
 
-\href{https://nanti.jisuanke.com/t/41421}{圆上整点/高斯素数 \quad 2019上海网络赛}
+\href{https://nanti.jisuanke.com/t/41421}{圆上整点/高斯素数 \quad 2019上海网络赛 Peekaboo}
 
 \lstinputlisting[language=C++, style=codestyle2]{code07/Lattice-points.cpp}
 
@@ -310,8 +310,240 @@ $1\le n\le 10^{18}$。
 
 
 \section{FFT 与 NTT}
-
 \subsection{FFT}
+$FFT$在算法竞赛中的主要应用之一是加速多项式乘法的计算。
+
+\subsubsection{多项式}
+\begin{itemize}
+\item 多项式的系数表示：
+
+$$A(x)=\sum_{i=0}^{n-1}a_ix^i=a_0+a_1x+a_2x^2+...+a_{n-1}x^{n-1}$$
+
+\item 多项式的点值表示：
+
+对于上面的$n-1$次多项式，将一组(n个)互不相同的$x$带入进去得到对应的$y$（也就是n个点）。
+这{\heiti n个点可以唯一确定一个多项式}。
+
+\begin{note}
+由多项式的点值表示转系数表示，需要进行多项式插值，朴素的插值算法时间复杂度为$O(n^2)$。
+\end{note}
+\end{itemize}
+
+\subsubsection{多项式乘法}
+有两个多项式，$A(x)=\sum_{i=0}^{n-1}a_ix^i$ 和$B(x)=\sum_{i=0}^{n-1}b_ix^i$    (假设两个多项式次数相同，若不同可在后面补零）
+
+则
+$$
+C(x)=A(x)*B(x)=\sum_{k=0}^{2n-2}(\sum_{i+j=k}a_ib_j)x^k
+$$
+两个$ n - 1$次多项式相乘，得到的是一个 $2n-2$ 次多项式，时间复杂度为 $O(n ^ 2)$。
+
+\begin{note}
+另外，也可以用点值表达，即选择$2n-1$个互不相同的$x_i$带入$A(x)$和$B(x)$相乘，得到$2n-1$个
+值，这$2n-1$个点值就唯一确定了这个多项式，时间复杂度$O(n)\ $({\heiti 注意只是得到点值表达式})。
+\end{note}
+
+\subsubsection{复数}
+设a、b为实数，$i ^ 2=-1$ ，形如 $a + bi$的数叫做复数，其中$i$被称为虚数单位。复数域是已知最大的域。
+
+
+\subsubsection{复平面}
+在复平面中，x 轴代表实数、y 轴（除原点外的所有点）代表虚数。每一个复数 $a + bi$ 对应复平面上一个从 (0, 0) 指向 (a, b) 的向量。
+
+该向量的长度 $\sqrt {a ^ 2 + b ^ 2}$叫做{\heiti 模长}。
+
+从 x 轴正半轴到该向量的转角的有向（以逆时针为正方向）角叫做{\heiti 幅角}。
+
+复数相加遵循平行四边形定则。
+
+复数相乘时，模长相乘，幅角相加。
+
+\subsubsection{单位根}
+下文中，如不特殊指明，均取{\heiti n为2的正整数次幂}。
+
+在复平面上，以原点为圆心，1为半径作圆，所得的圆叫做{\heiti 单位圆}。以原点为起点，单位圆的 n 等分点为终点，作 n个向量。设所得的{\heiti 幅角为正且最小}的向量对应
+的复数为 $\omega_n$，称为 n 次单位根。
+
+由复数乘法的定义（模长相乘，幅角相加）可知，其余的 $n - 1$个向量对应的复数分别为$\omega_n^2,\ \omega_n^3\ ,\ ...\ ,\ \omega_n^n$，其中 
+$\omega_n ^ n = \omega_n ^ 0 = 1\ ,\ \omega_n^1=\omega_n$。
+
+单位根的幅角为圆周角的 $1 \over n$，这为我们提供了一个计算单位根及其幂的公式：
+
+$$
+\omega_n^k=cos(k\frac{2\pi}{n})+isin(k\frac{2\pi}{n})
+$$
+
+\subsubsection{单位根的性质}
+\begin{itemize}
+\item  $\omega_{2n}^{2k}=\omega_n^k$   
+\begin{proof}
+显然
+\end{proof}
+
+\vbox{}
+
+\item  $\omega_n^{k+\frac{n}{2}}=-\omega_n^{k}$
+\begin{proof}
+  因为$\omega_n^{\frac{n}{2}}=-1$（带入公式即可验证）
+\end{proof}
+\end{itemize}
+
+\subsubsection{离散傅里叶变换(DFT)}
+
+对于一个$n$个系数，$n-1$次的多项式，考虑多项式$A(x)$的表示。
+
+将n次{\heiti 单位根的0到$n-1$次幂}（共n个）带入多项式的系数表示，所得点值向量为：
+$$
+\left \{  A(\omega_n^0)\ ,\ A(\omega_n^1)\ ,\ A(\omega_n^2)\ ,\ ...\ ,\ A(\omega_n^{n-1}) \right \}
+$$
+\begin{note}
+变换后的这n个点对，可以唯一确定这个多项式。
+\end{note}
+
+称这个结果$(A(\omega_n^0)\ ,\ A(\omega_n^1)\ ,\ A(\omega_n^2)\ ,\ ...\ ,\ A(\omega_n^{n-1}))$为其系数向量$(a_0\ ,\ a_1\ ,\ a_2\ ,\ ...\ ,\ a_{n-1})$的{\heiti 离散傅里叶变换}。
+
+按照朴素方法依次带入来求解原系数的离散傅里叶变换，时间复杂度仍为$O(n^2)$。
+
+而这个过程可以{\heiti 分治进行}，因而可以优化，即FFT，这是算法竞赛的重点。（{\heiti 但此时还不知道这n个点对求多项式乘法有什么用，继续看}）
+
+
+\begin{definition}{从信号的角度看}{label}
+如果从信号的角度看，这个过程就是{\heiti 时域到频域的转换}， 即选择一段时间取样$N$个点，即$0$时刻，$1$时刻，...，$N-1$时刻。转换的思路是这样的：
+我去“枚举”一些频率，对于一个固定的频率$f$，去对{\heiti 时域图像(假设为x(t))}做“缠绕操作”，而缠绕的时间取样就是上面的N个时刻，
+即$X(f)=\sum_{n=0}^{N-1}x(n)w_N^{fn}$  (n是每个时间点)。简单来说，缠绕操作就是对一个{\heiti 无明显频率规律}的时域图像，
+看它在指定（枚举的）频率上是否有这个频率，衡量的指标就是$X$ 。（至于缠绕操作，就是一种方便的工具，使得$x(n)$分布在特定的角
+度上）。所以我们要枚举频率，一般也取$0\sim N-1$  。
+
+我们对$X(f)=\sum_{n=0}^{N-1}x(n)w_N^{fn}$   简单变个形：
+$$
+X(f)=\sum_{n=0}^{N-1}x(n)(w_N^{f})^n
+$$
+再看下朴素的多项式
+$$
+A(x)=\sum_{i=0}^{n-1}a_ix^i=a_0+a_1x+a_2x^2+...+a_{n-1}x^{n-1}
+$$
+即$f$分别取$0,1,2,...,n-1$，就是多项式$A(x)$带入$x=w_n^0\ ,\ w_n^1\ ,\ ...\ ,\ w_n^{n-1}$。
+
+而多项式的系数$a_0\ ,\ a_1\ ,\ ...\ ,\ a_{n-1}$就对应$x(0)\ ,\ x(1)\ ,\ ...\ ,\ x(n-1)$ ({\heiti 即信号在时域离散时间点上的n个强度值})。
+
+\end{definition}
+
+\subsubsection{快速傅里叶变换(FFT)}
+考虑将多项式按照系数下标的奇偶分为两部分
+$$
+A(x)=(a_0+a_2x^2+a_4x^4+...+a_{n-2}x^{n-2})+(a_1x+a_3x^3+a_5x^5+...+a_{n-1}x^{n-1})
+$$
+令
+\begin{align*}
+A_1(x)=a_0+a_2x+a_4x^2+...+a_{n-2}x^{\frac{n}{2}-1}  \\
+A_2(x)=a_1+a_3x+a_5x^2+...+a_{n-1}x^{\frac{n}{2}-1}
+\end{align*}
+则有
+$$
+A(x)=A_1(x^2)+xA_2(x^2)
+$$
+假设$k<\frac{n}{2}$，现在要求$A(\omega_n^k)$,则根据单位根的性质1，有：
+$$
+A(\omega_n^k)=A_1(\omega_\frac{n}{2}^{k})+\omega_n^kA_2(\omega_\frac{n}{2}^{k})
+$$
+由于前面$k<\frac{n}{2}$，对于$A(\omega_n^{k+\frac{n}{2}})$的部分，使用单位根的性质1和性质2，有：(这个指数范围的变化是精华)
+$$
+A(\omega_n^{k+\frac{n}{2}})=A(-w_n^k)=A_1(\omega_\frac{n}{2}^{k})-\omega_n^kA_2(\omega_\frac{n}{2}^{k})
+$$
+这样，当$ k$ 取遍 $[0,\ \frac{n}{2}-1]$ 时，$k$ 和 $k + \frac{n}{2}$取遍了 $[0,\ n-1]$，即全部所求。
+
+那么，如果已知$A_1(x)$和$A_2(x)$在$\omega_\frac{n}{2}^0\ ,\ \omega_\frac{n}{2}^1\ ,\ ...\ ,\ \omega_\frac{n}{2}^{\frac{n}{2}-1}$的值，
+就可以在$O(n)$时间内求得$A(x)$在$\omega_n^0\ ,\ \omega_n^1\ ,\ \omega_n^2\ ,\ ...\ ,\ \omega_n^{n-1}$ 处的取值。而{\heiti 关于$A_1(x),A_2(x)$的问题正好是原问题规模缩小一半的子问题}，分治的边界为一个常数项$a_0$，即$A_\phi(x)$的系数只有一项。
+
+则该分治算法的时间复杂度为
+$$
+T(n)=2*T(n/2)+O(n)=O(nlogn)
+$$
+上述过程称为{\heiti Cooley-Tukey 算法（JW Cooley 和 John Tukey）}。
+
+{\heiti 现在我们可以在$O(nlogn)$时间内求得n个点对啦!}
+
+即$(\omega_n^0\ ,\ \omega_n^1\ ,\ \omega_n^2\ ,\ ...\ ,\ \omega_n^{n-1})$和$(A(\omega_n^0)\ ,\ A(\omega_n^1)\ ,\ A(\omega_n^2)\ ,\ ...\ ,\ A(\omega_n^{n-1}))$。
+
+然而还是不知道和多项式乘法有什么关系......
+
+事实上，这n对取值，将作为“原料”，帮助我们{\heiti 反过来去求多项式的系数}。
+
+和一般的插值不同（$O(n^2)$），{\heiti 这些特殊的点对可以在$O(nlogn)$内求出多项式的系数}。
+
+即下面的傅里叶逆变换，仿佛离最终目标进了一大步......
+
+\subsubsection{傅里叶逆变换}
+将点值表示的多项式转化为系数表示，同样可以使用快速傅里叶变换，这个过程叫做{\heiti 傅里叶逆变换}。
+
+设$(y_0\ ,\ y_1\ ,\ y_2\ ,\ ...\ ,\ y_{n-1})$ 为$(a_0\ ,\ a_1\ ,\ a_2\ ,\ ...\ ,\ a_{n-1})$的离散傅里叶变换。考虑另一个向量$(C_0\ ,\ C_1\ ,\ C_2\ ,\ ...\ ,\ C_{n-1})$，满足
+$$
+C_k=\sum_{i=0}^{n-1}y_i(\omega_n^{-k})^i   \quad,k\in [0,n-1]
+$$
+即多项式$B(x)=y_0+y_1x+y_2x^2+...+y_{n-1}x^{n-1}$ 在$\omega_n^0\ ,\ \omega_n^{-1}\ ,\ \omega_n^{-2}\ ,\ ...\ ,\ \omega_n^{-(n-1)}$ 处的点值表示。
+其中{\heiti B(x)以原系数$a_i$的离散傅里叶变换作为新的系数。}
+
+将$C_k$展开：
+\begin{align*}
+C_k=\sum_{i=0}^{n-1}y_i(\omega_n^{-k})^i \\
+=\sum_{i=0}^{n-1} ( \sum_{j=0}^{n-1}a_j(\omega_n^i)^j )  (\omega_n^{-k})^i   \\
+=\sum_{i=0}^{n-1} ( \sum_{j=0}^{n-1}a_j(\omega_n^j)^i )  (\omega_n^{-k})^i   \\
+=\sum_{i=0}^{n-1} ( \sum_{j=0}^{n-1}a_j(\omega_n^j)^i (\omega_n^{-k})^i )     \\
+=\sum_{i=0}^{n-1} ( \sum_{j=0}^{n-1}a_j(\omega_n^{j-k})^i  )     \\
+=\sum_{j=0}^{n-1} a_j(\sum_{i=0}^{n-1}(\omega_n^{j-k})^i )      \\
+\end{align*}
+观察内层求和，为了解决这个求和式，先考虑一个式子先。令首项为1，公比为$\omega_n^k$的等比数列前n项和为$S(\omega_n^k)$：
+$$
+S(\omega_n^k)=1+\omega_n^k+(\omega_n^k)^2+...+(\omega_n^k)^{n-1}
+$$
+\begin{itemize}
+\item 当$k\neq0$ 时，两边同时乘上$\omega_n^k$，得
+$$
+\omega_n^kS(\omega_n^k)=\omega_n^k+(\omega_n^k)^2+(\omega_n^k)^3+...+(\omega_n^k)^{n}
+$$
+上面两式相减，整理后得
+\begin{align*}
+\omega_n^kS(\omega_n^k)-S(\omega_n^k)=(\omega_n^k)^{n}-1 \\
+S(\omega_n^k)=\frac{(\omega_n^k)^{n}-1 }{\omega_n^k-1}
+\end{align*}
+ 这个式子分子为0，分母一定不为0，因此
+$$
+S(\omega_{n}^{k})=0
+$$
+
+\item 当k=0时，$S(\omega_{n}^{k})=n$
+\end{itemize}
+
+\vbox{}
+
+继续考虑$C_k$，
+\begin{align*}
+C_k=\sum_{j=0}^{n-1} a_j(\sum_{i=0}^{n-1}(\omega_n^{j-k})^i ) \\
+=\sum_{j=0}^{n-1} a_jS(\omega_{n}^{j-k})
+\end{align*}
+对每一个$k$，枚举$j$，只有当$j=k$时，$S(\omega_{n}^{j-k})=n$，否则$S(\omega_{n}^{j-k})=0$，即
+\begin{align*}
+C_i=na_i  \\
+a_i=\frac{1}{n}C_i
+\end{align*}
+
+即{\heiti 使用单位根的倒数代替单位根，原系数的离散傅里叶变换结果作为新的系数，做一次快速傅里叶变换的过程，再将结果每个数除以$n$}，即为傅里叶逆变换的结果，即原系数$a_i$。
+
+这样就可以先做两次正变换再做一次逆变换求得系数啦。
+
+简单来说，求解多项式乘法的大致思路就是：
+
+\begin{itemize}
+\item 确定结果多项式$C(x)$的次数，决定要取的点对的数量$N$（$N$为2的次幂）；
+\item $O(nlogn)$求$A(x)$和$B(x)$在这$N$个点的值，然后依次相乘得到结果多项式在这$N$个点的值；  
+\item 做傅里叶逆变换求得系数值，即为结果多项式$C(x)$的系数。
+\end{itemize}
+
+\subsubsection{小结与实现细节}
+
+\subsubsection{FFT的递归实现}
+
+\subsubsection{FFT的迭代实现}
 
 \subsection{NTT}
 
