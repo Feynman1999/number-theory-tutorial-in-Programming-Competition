@@ -131,6 +131,12 @@ $$
 时间复杂度为$O(log(b))$。相比于快速乘，只是加法变了乘法。
 \lstinputlisting[language=C++, style=codestyle2]{code03/fastexp.cpp}
 
+\begin{note}
+	快速幂可以使用不同的进制，以及在特定问题下做一些预处理进行记忆化，可以节省时间。
+	
+	如\href{https://nanti.jisuanke.com/t/41355}{2019icpc南昌网络赛\quad The Nth Item}。
+\end{note}
+
 
 \section{费马小定理与逆元}
 前面我们讨论了关于同余式、同余方程的一些性质，小结一下，互质这个条件很重要。

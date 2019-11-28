@@ -61,6 +61,11 @@ lcm(a,b) * gcd(a,b) &=a*b \\
 lcm(S/a, S/b) &= S/gcd(a, b)
 \end{align*}
 
+\begin{note}
+另外一种计算两个数最大公约数的算法，叫做{\heiti Stein算法}。这种算法是针对欧几里得算法在对大整数进行运算时，需要试商导致增加运算时间的缺陷而提出的改进算法。
+感兴趣的可以自行查阅。
+\end{note}
+
 
 \section{线性方程定理}
 
@@ -166,6 +171,8 @@ y &= x_1 - a/b * y_1 \\
 递归的终止条件为$b=0$,这时候$x=1,\ y=0,\ a = gcd$。
 
 \lstinputlisting[language=C++, style=codestyle2]{code01/exgcd.cpp}
+
+\vbox{}
 
 \vbox{}
 

@@ -6,40 +6,23 @@
 	\item 分数转小数
 	\item DFS Similar
 	\item FFT, NTT
-	\item 多项式相关
+	%\item 多项式相关
 \end{introduction}
 
 \section{勾股数组}
 
+\begin{definition}{本原勾股数组}{label}
+	本原勾股数组是一个三元组$(a,b,c)$，其中$a,b,c$没有公因数，且满足：
+	$$a^2 + b^2 = c^2$$
+\end{definition}
 
-- $m$能表示成$m=a^2+b^2$，且$gcd(a,b)=1$，当且仅当以下两个条件之一成立：
-
-1. $m$是奇数，且$m$的每个素因子都模4余1
-
-2. $m$是偶数，$m/2$是奇数且$m/2$的每个素因子都模4余1
-
-\vbox{}
-
-回顾一下，本原勾股数组
-
-**定理2.1 （勾股数组定理）.**  每个本原勾股数组（a,b,c)（a为奇数，b为偶数)都可从如下公式得出：
-$$
-a=st ,\quad  b=\frac{s^2-t^2}{2},\quad  c=\frac{s^2+t^2}{2}
-$$
-其中s>t>=1是任意没有公因数的奇数，即互质的奇数
-
-\vbox{}
-
-有以上两条定理可知，$c$是一个本原勾股数组的斜边当且仅当方程
-$$
-2c=s^2+t^2
-$$
-{\heiti 有互素的奇整数解$s,t$ }
-
-且有如下命题
-
-{\heiti 毕达哥拉斯斜边命题}  $c$是一个本原勾股数组斜边的充要条件是$c$ 是模4余1的素数的乘积。
-
+\begin{theorem}{勾股数组定理}{gougushuzu}
+	每个本原勾股数组$(a,b,c)\ $(a为奇数，b为偶数)都可从如下公式得出：
+	$$
+	a=st ,\quad  b=\frac{s^2-t^2}{2},\quad  c=\frac{s^2+t^2}{2}
+	$$
+	其中$s>t>=1$是任意没有公因数的奇数。
+\end{theorem}
 
 
 \section{平方数之和、圆上整点}
@@ -48,6 +31,8 @@ $$
 
 先从$x$为素数考虑，这个时候规律相对简单。
 \subsection{将素数分解为平方之和}
+
+
 
 \begin{theorem}{定理}{primesquare}
 	设$p$是素数，则$p$是两平方数之和的充要条件是$p\equiv 1 \ (mod \ 4)   $ 或$p=2$。
@@ -182,7 +167,7 @@ $$
 	
 	上面的这个式子只是为了统一，所以看起来规律不明显。实际上一句话：
 	
-	如果有模4余3的素数的指数为奇数答案为0，否则就是所有模4余1的素数的指数加1后乘起来最后再乘4。
+	如果有模4余3的素数的指数为奇数，则答案为0；否则就是所有模4余1的素数的指数加1后乘起来最后再乘4。
 \end{theorem}
 
 \vbox{}
@@ -195,6 +180,9 @@ $$
 {\heiti 时间复杂度：$O(A+B)$，其中$A$为质因子分解$r^2(thus\ r)$的时间，$B$为圆上整点数。
 
 该代码在$r\le 10^9$时通过测试，更大时注意下会不会爆范围。}
+
+\href{https://nanti.jisuanke.com/t/41421}{圆上整点/高斯素数 \quad 2019上海网络赛}
+
 \lstinputlisting[language=C++, style=codestyle2]{code07/Lattice-points.cpp}
 
 
@@ -204,7 +192,10 @@ $$
 
 \section{循环节问题}
 \subsection{二阶常系数齐次线性递推循环节}
-先将模数分解，在模素数幂意义下分别求循环节，最后取最小公倍数即可。而对于模素数幂有结论$G(p_i^{a_i}) = p_i^{a_1-1}G(p_i)$。
+所谓二阶常系数齐次线性递推式就是类似斐波那契递推式那样的数列。这样的数列在模意义下会存在循环节。下面阐述下如何求其循环节：
+
+
+先将模数分解，在模素数幂意义下分别求循环节，最后取最小公倍数即可。而对于模素数幂有结论$G(p_i^{a_i}) = p_i^{a_1-1}G(p_i)$。$G(m)$表示在模数为$m$时的循环节大小。
 
 所以问题转为模素数如何处理。即给定$a,b,f(1),f(2)$，且满足$f(n)=a*f(n-1) + b*f(n-2)$。求$f(n)\ mod\ p$的循环节。
 
@@ -221,7 +212,8 @@ $$
 $$
 \left[\begin{array}{ll}{a} & {b} \\ {1} & {0}\end{array}\right]^{n}(\bmod p)=\left[\begin{array}{ll}{1} & {0} \\ {0} & {1}\end{array}\right]
 $$
-结论：设$c=a^2+4b$, 有两种情况：
+
+如何快一点求$n$呢？这里直接给出结论：设$c=a^2+4b$, 有两种情况：
 \begin{enumerate}
 	\item 若$c$是模$p$的二次剩余，则$n$是$p-1$的因子；
 	\item 若$c$不是模$p$的二次剩余，则$n$是$(p+1)(p-1)$的因子
@@ -323,24 +315,31 @@ $1\le n\le 10^{18}$。
 
 \subsection{NTT}
 
-\section{多项式}
-
-\subsection{拉格朗日插值法}
-
-\subsection{多项式求逆}
-
-\subsection{多项式取模}
-
-\subsection{多项式开方}
-
-\subsection{多项式多点求值}
-
-\subsection{多项式多点插值}
 
 
+%\section{多项式}
+
+%\subsection{拉格朗日插值法}
+
+%\subsection{多项式求逆}
+
+%\subsection{多项式取模}
+
+%\subsection{多项式开方}
+
+%\subsection{多项式多点求值}
+
+%\subsection{多项式多点插值}
+
+\vbox{}
+
+\vbox{}
 
 \begin{problemset}
-	\item xx
+	\item \href{http://poj.org/problem?id=1305}{本原勾股数组 \quad poj 1305}
+	\item \href{https://nanti.jisuanke.com/t/41421}{圆上整点/高斯素数 \quad 2019上海网络赛}
+	\item \href{https://www.51nod.com/Challenge/Problem.html#problemId=1195}{斐波那契数列循环节 \quad 51nod-1195}
+	\item dfs similar \quad 2019icpc亚洲区域赛-南昌站B题
 \end{problemset}
 
 
