@@ -481,7 +481,7 @@ $$
 C_k=\sum_{i=0}^{n-1}y_i(\omega_n^{-k})^i   \quad,k\in [0,n-1]
 $$
 即多项式$B(x)=y_0+y_1x+y_2x^2+...+y_{n-1}x^{n-1}$ 在$\omega_n^0\ ,\ \omega_n^{-1}\ ,\ \omega_n^{-2}\ ,\ ...\ ,\ \omega_n^{-(n-1)}$ 处的点值表示。
-其中{\heiti B(x)以原系数$a_i$的离散傅里叶变换作为新的系数。}
+其中{\heiti $B(x)$以原系数$a_i$的离散傅里叶变换作为新的系数。}
 
 将$C_k$展开：
 \begin{align*}
@@ -511,7 +511,7 @@ $$
 S(\omega_{n}^{k})=0
 $$
 
-\item 当k=0时，$S(\omega_{n}^{k})=n$
+\item 当$k=0$时，$S(\omega_{n}^{k})=n$
 \end{itemize}
 
 \vbox{}
@@ -527,27 +527,106 @@ C_i=na_i  \\
 a_i=\frac{1}{n}C_i
 \end{align*}
 
-即{\heiti 使用单位根的倒数代替单位根，原系数的离散傅里叶变换结果作为新的系数，做一次快速傅里叶变换的过程，再将结果每个数除以$n$}，即为傅里叶逆变换的结果，即原系数$a_i$。
+也就是说，{\heiti 使用原系数的离散傅里叶变换结果作为新的系数，单位根的倒数代替单位根代入，做一次快速傅里叶变换的过程，再将结果每个数除以$n$}，即为傅里叶逆变换的结果，即原系数$a_i$。
 
 这样就可以先做两次正变换再做一次逆变换求得系数啦。
 
 简单来说，求解多项式乘法的大致思路就是：
 
-\begin{itemize}
+\begin{enumerate}
 \item 确定结果多项式$C(x)$的次数，决定要取的点对的数量$N$（$N$为2的次幂）；
 \item $O(nlogn)$求$A(x)$和$B(x)$在这$N$个点的值，然后依次相乘得到结果多项式在这$N$个点的值；  
 \item 做傅里叶逆变换求得系数值，即为结果多项式$C(x)$的系数。
-\end{itemize}
+\end{enumerate}
 
 \subsubsection{小结与实现细节}
+$DFT$（离散傅里叶变换）是一种对$n$个元素的数组的变换，直接代入依次求解的方法是$O(n^2)$的。但是用分治的方法是$O(nlogn)$，即FFT（快速傅里叶变换）。
+
+由于DFT满足{\heiti cyclic convolution（循环卷积）}的性质，即定义$h=a (*) b$  为$h_r=\sum_{x+y=r}a_xb_y\ $(多项式乘法，$h$为结果多项式)，
+则有$DFT(a (*) b)=DFT(a)\cdot DFT(b)$，右边为向量点乘。
+
+所以所求$a (*) b=DFT^{-1}(DFT(a)\cdot DFT(b))$，
+即只要对$a,b$向量分别进行$DFT$，所得的两个向量点乘之后再逆变换就可以了。
+
+\begin{note}
+\begin{itemize}
+\item 由于FFT本身算法的要求，n是2的次幂，注意补0；
+\item DFT是定义在复数域上的，有与整数之间变换的要求；
+\item 不要忘记最后除n；
+\item C++ 的 STL 在头文件'complex'中提供一个复数的模板实现'std::complex<T>'，其中T为实数类型，一般取'double'，在对精度要求较高的时候可以使用'long double'或'\_\_float128'（不常用）；
+\item 单位根的倒数等于其共轭复数，使用`std::conj()` 取得 IDFT 所需的单位根的倒数；
+\item 对时间要求苛刻时，可以自己实现复数类以提高速度。
+\end{itemize}
+\end{note}
+
 
 \subsubsection{FFT的递归实现}
+直接按照上述思路实现即可，使用C++已经封装的Complex。
+\href{http://uoj.ac/problem/34}{uoj-34 多项式乘法}
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{fft1.png}
+	\caption{fft-recursion \label{fig:fft1}}
+\end{figure}
+
+\lstinputlisting[language=C++, style=codestyle2]{code07/fft-recursion.cpp}
+
 
 \subsubsection{FFT的迭代实现}
+递归实现的 FFT 效率不高，因为有栈的调用和参数的传递，实际中一般采用迭代实现。
+
+{\heiti 二进制位翻转}
+
+对分治规律的总结:
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=1.0\textwidth]{fft-iter.png}
+	\caption{分治的规律 \label{fig:fft-pattern}}
+\end{figure}
+这为迭代实现提供了理论基础。
+
+{\heiti 蝴蝶操作}
+
+考虑合并两个子问题的过程，假设$A_1(w_{\frac{n}{2}}^k)$ 和$A_2(w_{\frac{n}{2}}^k)$ 分别存放在$a[k]$和$a[\frac{n}{2}+k]$中，$A(w_n^k)$和$A(w_n^{k+\frac{n}{2}})$ 将要存放在$b[k]$和$b[\frac{n}{2}+k]$中，合并的操作可以表示为：
+\begin{align*}
+b[k]\leftarrow  a[k]+w_n^k*a[\frac{n}{2}+k]  \\
+b[k+\frac{n}{2}] \leftarrow a[k]-w_n^k*a[\frac{n}{2}+k]
+\end{align*}
+考虑加入一个临时变量$t$,使得这个过程可以在原地完成，而不需要数组$b$，	
+\begin{align*}
+t \leftarrow w_n^k*a[\frac{n}{2}+k]   \\
+a[k+\frac{n}{2}] \leftarrow a[k]-t  \\
+a[k] \leftarrow a[k]+t
+\end{align*}
+由于$k$和$k+\frac{n}{2}$ 是对应的，所以不同的k之间不会相互影响。
+
+这一过程被称为蝴蝶操作。
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{fft2.png}
+	\caption{fft-iteration \label{fig:fft2}}
+\end{figure}
+
+\lstinputlisting[language=C++, style=codestyle2]{code07/fft-iteration.cpp}
 
 \subsection{NTT}
+由于$FFT$涉及到复数运算，难免有精度问题，在计算一些高精度乘法的时候就有可能由于精度出现错误，这
+便让我们考虑是否有在模意义下的方法，这就是{\heiti 快速数论变换}($Fast\ Number-Theoretic\ Transform,\ NTT$)。
 
+首先来看$FFT$中能归并地变换用到了单位根$\omega_n$的什么性质：
+\begin{enumerate}
+\item $\omega_n^n = 1$；
+\item $\omega_n^0\ ,\ \omega_n^1\ ,\ \omega_n^2\ ,\ ...\ ,\ \omega_n^{n-1}$是互不相同的，这样代入计算出来的点值才可以用来还原出多项式的系数；
+\item $\omega_n^{k+\frac{n}{2}}=-\omega_n^{k}$，$\ \omega_{2n}^{2k}=\omega_n^k$，这使得问题规模得以减半；
+\item $\sum_{i=0}^{n-1}(\omega_n^{j-k})^i = \left\{\begin{matrix}
+0,\quad j\neq k\\ 
+n,\quad j= k
+\end{matrix}\right.$，这使得可以用同样的优化方法加速逆变换。
+\end{enumerate}
 
+下面我们要在模意义下寻找满足这些性质的数！
 
 %\section{多项式}
 
@@ -572,6 +651,7 @@ a_i=\frac{1}{n}C_i
 	\item \href{https://nanti.jisuanke.com/t/41421}{圆上整点/高斯素数 \quad 2019上海网络赛}
 	\item \href{https://www.51nod.com/Challenge/Problem.html#problemId=1195}{斐波那契数列循环节 \quad 51nod-1195}
 	\item dfs similar \quad 2019icpc亚洲区域赛-南昌站B题
+	\item FFT \quad BZOJ 3992 SDOI2015 序列统计
 \end{problemset}
 
 
