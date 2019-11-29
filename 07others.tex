@@ -404,12 +404,12 @@ $$
 
 按照朴素方法依次带入来求解原系数的离散傅里叶变换，时间复杂度仍为$O(n^2)$。
 
-而这个过程可以{\heiti 分治进行}，因而可以优化，即FFT，这是算法竞赛的重点。（{\heiti 但此时还不知道这n个点对求多项式乘法有什么用，继续看}）
+而这个过程可以{\heiti 分治进行}，因而可以优化，即$FFT$，这是算法竞赛的重点。（{\heiti 但此时还不知道这n个点对求多项式乘法有什么用，继续看}）
 
 
 \begin{definition}{从信号的角度看}{label}
 如果从信号的角度看，这个过程就是{\heiti 时域到频域的转换}， 即选择一段时间取样$N$个点，即$0$时刻，$1$时刻，...，$N-1$时刻。转换的思路是这样的：
-我去“枚举”一些频率，对于一个固定的频率$f$，去对{\heiti 时域图像(假设为x(t))}做“缠绕操作”，而缠绕的时间取样就是上面的N个时刻，
+我去“枚举”一些频率，对于一个固定的频率$f$，去对{\heiti 时域图像(假设为$x(t)$)}做“缠绕操作”，而缠绕的时间取样就是上面的N个时刻，
 即$X(f)=\sum_{n=0}^{N-1}x(n)w_N^{fn}$  (n是每个时间点)。简单来说，缠绕操作就是对一个{\heiti 无明显频率规律}的时域图像，
 看它在指定（枚举的）频率上是否有这个频率，衡量的指标就是$X$ 。（至于缠绕操作，就是一种方便的工具，使得$x(n)$分布在特定的角
 度上）。所以我们要枚举频率，一般也取$0\sim N-1$  。
@@ -599,7 +599,7 @@ t \leftarrow w_n^k*a[\frac{n}{2}+k]   \\
 a[k+\frac{n}{2}] \leftarrow a[k]-t  \\
 a[k] \leftarrow a[k]+t
 \end{align*}
-由于$k$和$k+\frac{n}{2}$ 是对应的，所以不同的k之间不会相互影响。
+由于$k$和$k+\frac{n}{2}$ 是对应的，所以不同的$k$之间不会相互影响。
 
 这一过程被称为蝴蝶操作。
 
@@ -636,7 +636,42 @@ n,\quad j= k
 到这里我们发现，在模$p$意义下，$p$的原根$g$的$k$次方$g_n$，具有和单位根$\omega_n$一样的性质！上面已经说明了其具有性质1和性质2。下面说明性质3。
 
 由于$g_n^n\equiv 1\ (mod\ p)$，所以$g_n^{\frac{n}{2}}\equiv 1\ or\ -1\ (mod\ p)$。又由于$g$是原根，则$g_n^{\frac{n}{2}}\equiv -1\ (mod\ p)$。
-所以$g_n^{k+\frac{n}{2}}\equiv -g_n^{k}$得证。至于$g_{2n}^{2k}\equiv g_n^k$，只需证$g_n^2\equiv g_{\frac{n}{2}}$。
+所以$g_n^{k+\frac{n}{2}}\equiv -g_n^{k}$得证。至于$g_{2n}^{2k}\equiv g_n^k$，只需证$g_n^2\equiv g_{\frac{n}{2}}$。这是比较显然的，因为$k=\frac{p-1}{2^m}$。
+
+对于性质4，证明方法类似，大家可以自行尝试。
+
+因此在$NTT$中，我们可以用原根$g$的$k$次方$g_n$代替$FFT$中的单位根$\omega_{n}$。
+
+\subsubsection{NTT的实现细节}
+在$FFT$中，需要预处理$N$项单位根的次幂及其共轭，对应地，$NTT$中也需要。即预处理$g_n^0\ ,\ g_n^1\ ,\ ...\ ,\ g_n^{n-1}$，以及对应的模$p$意义下的逆元。
+
+$NTT$的代码相比$FFT$的代码变动很少。
+\begin{note}
+\begin{enumerate}
+\item 最后逆变换完成后除$n$时，变为乘上$n$关于$p$的逆元即可；
+\item $p=k*2^m + 1$中，最大能取到的$2^m$为能处理的结果多项式项数极限。如对于素数$998244353= 119 * 2^{23} + 1$, 最多能处理的$N = 2^{23}$。当$N<2^{23}$时，要将
+多余的部分乘到$k$上；(常见的素数及其原根见附录表)
+\item 由于实数域上的运算比复数域运算要快，所以$NTT$的运行时间理论上会比$FFT$少；(但由于有取模操作在，所以上述说明是玄学......)
+\item 如果一个题目不用取模，使用$NTT$时要注意原本的答案是否会大于等于所选取的模数$p$。
+\end{enumerate}
+\end{note}
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{ntt.png}
+	\caption{NTT-iteration \label{fig:ntt}}
+\end{figure}
+
+\lstinputlisting[language=C++, style=codestyle2]{code07/NTT.cpp}
+
+\subsubsection{模数任意的解决方案}
+$NTT$要求模数写成$p=k*2^m + 1$的形式，但有些题目，要求模数写不成这样的形式，甚至是一个合数。
+这样的话，一般选取$s$个常用的素数$p_1\ ,\ p_2\ ,\ ...\ ,\ p_s$，要求满足：
+$$
+\prod_{i=1}^s p_i > n(m-1)^2
+$$
+其中$n$是结果多项式的项数，$m$是要求的模数。然后分别在$mod\ p_i$下求解系数，最后使用中国剩余定理将结果合并（一般会使用高精度）。
+
 
 %\section{多项式}
 
@@ -661,7 +696,10 @@ n,\quad j= k
 	\item \href{https://nanti.jisuanke.com/t/41421}{圆上整点/高斯素数 \quad 2019上海网络赛}
 	\item \href{https://www.51nod.com/Challenge/Problem.html#problemId=1195}{斐波那契数列循环节 \quad 51nod-1195}
 	\item dfs similar \quad 2019icpc亚洲区域赛-南昌站B题
-	\item FFT \quad BZOJ 3992 SDOI2015 序列统计
+	\item FFT \quad BZOJ 3992 / SDOI2015 序列统计
+	\item FFT \quad BZOJ 3771 Triple
+	\item \href{https://www.lydsy.com/JudgeOnline/problem.php?id=3527}{BZOJ 3527 \quad FFT}
+	\item \href{https://www.luogu.com.cn/problem/P4245}{模板：任意模数NTT}
 \end{problemset}
 
 
