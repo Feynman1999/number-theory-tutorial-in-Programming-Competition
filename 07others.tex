@@ -540,7 +540,7 @@ a_i=\frac{1}{n}C_i
 \end{enumerate}
 
 \subsubsection{小结与实现细节}
-$DFT$（离散傅里叶变换）是一种对$n$个元素的数组的变换，直接代入依次求解的方法是$O(n^2)$的。但是用分治的方法是$O(nlogn)$，即FFT（快速傅里叶变换）。
+$DFT$（离散傅里叶变换）是一种对$n$个元素的数组的变换，直接代入依次求解的方法是$O(n^2)$的。但是用分治的方法是$O(nlogn)$，即$FFT$（快速傅里叶变换）。
 
 由于DFT满足{\heiti cyclic convolution（循环卷积）}的性质，即定义$h=a (*) b$  为$h_r=\sum_{x+y=r}a_xb_y\ $(多项式乘法，$h$为结果多项式)，
 则有$DFT(a (*) b)=DFT(a)\cdot DFT(b)$，右边为向量点乘。
@@ -550,11 +550,11 @@ $DFT$（离散傅里叶变换）是一种对$n$个元素的数组的变换，直
 
 \begin{note}
 \begin{itemize}
-\item 由于FFT本身算法的要求，n是2的次幂，注意补0；
+\item 由于$FFT$本身算法的要求，n是2的次幂，注意补0；
 \item DFT是定义在复数域上的，有与整数之间变换的要求；
 \item 不要忘记最后除n；
-\item C++ 的 STL 在头文件'complex'中提供一个复数的模板实现'std::complex<T>'，其中T为实数类型，一般取'double'，在对精度要求较高的时候可以使用'long double'或'\_\_float128'（不常用）；
-\item 单位根的倒数等于其共轭复数，使用`std::conj()` 取得 IDFT 所需的单位根的倒数；
+\item C++ 的 $STL$ 在头文件'complex'中提供一个复数的模板实现'std::complex<T>'，其中T为实数类型，一般取'double'，在对精度要求较高的时候可以使用'long double'或'\_\_float128'（不常用）；
+\item 单位根的倒数等于其共轭复数，使用`std::conj()` 取得 $IDFT$ 所需的单位根的倒数；
 \item 对时间要求苛刻时，可以自己实现复数类以提高速度。
 \end{itemize}
 \end{note}
@@ -574,7 +574,7 @@ $DFT$（离散傅里叶变换）是一种对$n$个元素的数组的变换，直
 
 
 \subsubsection{FFT的迭代实现}
-递归实现的 FFT 效率不高，因为有栈的调用和参数的传递，实际中一般采用迭代实现。
+递归实现的 $FFT$ 效率不高，因为有栈的调用和参数的传递，实际中一般采用迭代实现。
 
 {\heiti 二进制位翻转}
 
@@ -627,6 +627,16 @@ n,\quad j= k
 \end{enumerate}
 
 下面我们要在模意义下寻找满足这些性质的数！
+
+\subsubsection{原根}
+由第三章中知一个素数$p$的原根$g$满足$g^0\ ,\ g^1\ ,\ ...\ ,\ g^{p-2}\ (mod\ p)$均不相同。对于一个素数$p$，将其
+写成$p=k*2^m + 1$的形式，记$2^m=n$，有$g^{kn}\equiv 1\ (mod\ p)$。我们记$g_n = g^k$，则有$g_n^n\equiv 1\ (mod\ p)$。
+由于$g$是$p$的原根，则$g_n^0\ ,\ g_n^1\ ,\ ...\ ,\ g_n^{n-1}$互不相同。
+
+到这里我们发现，在模$p$意义下，$p$的原根$g$的$k$次方$g_n$，具有和单位根$\omega_n$一样的性质！上面已经说明了其具有性质1和性质2。下面说明性质3。
+
+由于$g_n^n\equiv 1\ (mod\ p)$，所以$g_n^{\frac{n}{2}}\equiv 1\ or\ -1\ (mod\ p)$。又由于$g$是原根，则$g_n^{\frac{n}{2}}\equiv -1\ (mod\ p)$。
+所以$g_n^{k+\frac{n}{2}}\equiv -g_n^{k}$得证。至于$g_{2n}^{2k}\equiv g_n^k$，只需证$g_n^2\equiv g_{\frac{n}{2}}$。
 
 %\section{多项式}
 
