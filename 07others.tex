@@ -268,7 +268,7 @@ dfs similar是指一类可以“暴力”搜索的问题，这类问题往往有
 
 \subsection{Counting Sequences I(18上海网络赛D)}
 \begin{custom}{问题}
-我们定义一个由正整数组成的序列$a_1,a_2,...,a_n$是好的当：
+我们定义一个由正整数组成的序列$a_1\ ,\ a_2\ ,\ ...\ ,\ a_n$是好的当：
 \begin{itemize}
 \item $n\ge2$
 \item $a_1+...+a_n = a_1*...*a_n$
@@ -276,33 +276,51 @@ dfs similar是指一类可以“暴力”搜索的问题，这类问题往往有
 请输出有多少种这样的序列，$2\le n \le 3000$。
 \end{custom}
 
+\begin{solution}
+考虑枚举序列中非1的数(非降序地)，边枚举边统计不同长度序列的答案。直觉复杂度较低。可以证明一下，枚举的数的大小不超过3000。
+\end{solution}
+\lstinputlisting[language=C++, style=codestyle2]{code07/counting-sequences.cpp}
+
+
+
+
 
 
 
 \subsection{反欧拉函数(洛谷P4780)}
 \begin{custom}{问题}
-求最小的正整数$x$，使得$\phi(x)=n$。输出$x$，如果$x>2^{31}$或者不存在，则输出$-1$。
+求最小的正整数$x$，使得$\phi(x)=n$。输出$x$，如果$x\ge 2^{31}$或者不存在则输出$-1$。
 \end{custom}
+
+\begin{solution}
+枚举$x$的可能质因子$p$，则必须有$n\%(p-1)=0$ ，同时再枚举该质因子的指数，此时要求每有几个$p$（指数），$n$就要能整除$p$几次。  
+
+时间复杂度有点迷，但感觉再大点还是可以做的。
+\end{solution}
+\lstinputlisting[language=C++, style=codestyle2]{code07/Anti-Euler.cpp}
+
+
 
 
 
 
 \subsection{因子个数最多的数(51nod1060)}
 \begin{custom}{问题}
-把一个数的约数个数定义为该数的复杂程度，给出一个n，求$1\sim n$中复杂程度最高的那个数。如果有多个数复杂度相等，输出最小的。
+把一个数的约数个数定义为该数的复杂程度，给出一个$n$，求$1\sim n$中复杂程度最高的那个数。如果有多个数复杂度相等，输出最小的。
 $1\le n\le 10^{18}$。
+
+即给定$N$，求$[1,N]$之间最大的反素数({\heiti 即拥有因子数目最多的数})。
 \end{custom}
 
-即给定$N$，求$[1,N]$之间最大的反素数**（即拥有因子数目最多的数）**
-
+\begin{solution}
 性质:
 \begin{itemize}
-	\item 一个反素数的质因子必然是从2开始连续的质数。 
-	\item $p=2^{t_1} * 3^{t_2} * 5^{t_3} * 7^{t_4}$...必然t1>=t2>=t3>=...
+	\item 一个反素数的质因子们必然是从2开始连续的质数。 
+	\item $p=2^{t_1} * 3^{t_2} * 5^{t_3} * 7^{t_4}$...必然$t_1 \ge t_2 \ge t_3 \ge ...$
 \end{itemize}
 
-暴力dfs    时间复杂度大概几个log
-
+暴力$dfs$，时间复杂度大概几个$log$？（不会分析.jpg）
+\end{solution}
 \lstinputlisting[language=C++, style=codestyle2]{code07/mostfactors.cpp}
 
 
@@ -459,7 +477,7 @@ $$
 $$
 T(n)=2*T(n/2)+O(n)=O(nlogn)
 $$
-上述过程称为{\heiti Cooley-Tukey 算法（JW Cooley 和 John Tukey）}。
+上述过程称为{\heiti $Cooley-Tukey$ 算法（JW Cooley 和 John Tukey）}。
 
 {\heiti 现在我们可以在$O(nlogn)$时间内求得n个点对啦!}
 
