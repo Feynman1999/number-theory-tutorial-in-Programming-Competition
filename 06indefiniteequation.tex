@@ -1,13 +1,42 @@
 \chapter{不定方程}
 
 \begin{introduction}
-	\item xxx
+	\item 佩尔方程
+	\item 其它不定方程
 \end{introduction}
 
 \section{佩尔方程}
+$Pell$方程是指具有形式$x^2-Dy^2=1$的方程，其中$D$是一个固定的正整数且{\heiti 不是完全平方数}。
 
+假设可求得$Pell$方程的一个解$x_1,y_1$，则可以用下面的方法来产生一个新的解。将已知解因式分解为
+$$
+1=x_1^2-Dy_1^2=(x_1+y_1\sqrt{D})(x_1-y_1\sqrt{D})
+$$
+两边同时平方便得到一个新的解：
+$$
+1=1^2=(x_1+y_1\sqrt{D})^2(x_1-y_1\sqrt{D})^2\\
+=(x_1^2+y_1^2D)^2-(2x_1y_1)^2D
+$$
+也就是说，$(x_1^2+y_1^2D\ ,\ 2x_1y_1)$是一个新解。取3次幂、4次幂，等等，可以找到所需的任意多个解。
 
-\section{切比雪夫多项式}
+\begin{theorem}{Pell方程定理}{label}
+设$D$是一个正整数，且不是完全平方数，则佩尔方程
+$$
+x^2-Dy^2=1
+$$
+总有正整数解。如果$(x_1,y_1)$是使$x_1$最小的解，则每个解$(x_k,y_k)$可通过取幂得到：
+$$
+x_k+y_k\sqrt{D}=(x_1+y_1\sqrt{D})^k ,\quad k=1,2,3,...
+$$
+矩阵形式求解：
+$$
+\left(\begin{array}{l}{x_{n}} \\ {y_{n}}\end{array}\right)=\left(\begin{array}{ll}{x_{1}} & {D y_{1}} \\ {y_{1}} & {x_{1}}\end{array}\right)^{n-1}\left(\begin{array}{l}{x_{1}} \\ {y_{1}}\end{array}\right)
+$$
+\end{theorem}
+\begin{note}
+注意，一些方程的最小解会很大。关于何时最小解大，何时小，还没有已知的明确的模式。
+\end{note}
+
 
 \section{其它不定方程}
 
@@ -34,5 +63,6 @@ $f(n)=$最小的正整数$m$使得$\frac{m*(m+1)}{2}$是$n$的倍数。$f(1)\sim
 \vbox{}	
 
 \begin{problemset}
-	\item xx
+	\item \href{http://poj.org/problem?id=1320}{POJ1320 \quad Street Numbers\quad 佩尔方程}
+	\item \href{http://acm.hdu.edu.cn/showproblem.php?pid=6222}{HDU6222 \quad Heron and His Triangle\quad 佩尔方程}
 \end{problemset}

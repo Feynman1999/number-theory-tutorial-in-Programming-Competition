@@ -56,7 +56,7 @@
 25 294409
 
 \section{常见的素数及其原根}
-
+见表\ref{tab:ntt-primes}。
 \begin{table}[!htbp]
 \centering
 \caption{常见的素数及其原根 \label{tab:ntt-primes}}
@@ -105,3 +105,10 @@ $p=k*2^m + 1$         & $k$   & $m$  & $groot$ \\ \hline
 4179340454199820289 & 29  & 57 & 3     \\ \hline
 \end{tabular}
 \end{table}
+
+\section{一些公式}
+\subsection{切比雪夫多项式}
+$$
+\cos n x=\left\{\begin{array}{l}{\sum_{k=0}^{\frac{n}{2}}(-1)^{\frac{n-2 k}{2}} \frac{n \cdot(n+2 k-2) ! !}{(2 k) !(n-2 k) ! !} \cos ^{2 k} x} \ , \quad  n\ is\ even \\
+ {\sum_{k=1}^{\frac{n+1}{2}}(-1)^{\frac{n+1-2 k}{2}} \frac{n \cdot(n+2 k-3) !}{(2 k-1) !(n+1-2 k) ! !} \cos ^{2 k-1} x} \ , \quad  n\ is\ odd  \end{array}\right.
+$$
