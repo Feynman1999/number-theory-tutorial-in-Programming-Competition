@@ -1,29 +1,747 @@
 \chapter{积性函数}
 
 \begin{introduction}
-	\item xxx
+	\item 因子次幂和函数
+	\item 欧拉函数
+	\item 莫比乌斯函数
+	\item 莫比乌斯反演
+	\item 积性函数与狄利克雷卷积
+	\item 积性函数前缀和
+	\item 杜教筛
+	\item 拓展埃氏筛
+	% \item rng58-clj等式
 \end{introduction}
 
 
 \section{因子次幂和函数}
+\begin{definition}{因子次幂和函数}{label}
+定义$t$次幂$\sigma$函数$\sigma_t(n)=\sum_{d|n}d^t$
 
+两个特殊情况：
+
+\begin{enumerate}
+\item $t=0$， $\sigma_0(n)$是因子个数函数，计算方法是质因子分解后指数+1相乘；
+\item $t=1$， $\sigma_1(n)$是因子和函数，计算方法是：
+$$
+\prod \frac{p_{i}^{n_{i}+1}-1}{p_{i}-1}
+$$
+\end{enumerate}
+
+他们都是积性函数。
+\end{definition}
+
+使用欧拉筛预处理前maxn项因子和函数的值(因子个数函数类似)。时间复杂度$O(n)$。
+
+help[maxn]存每个数最小质因子的指数次方，如$12$存$2^2$，$18$存$2^1$，$32$存$2^5$。
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/Sum-function-of-factors.cpp}
+
+\begin{note}
+对因子和函数$g(n)$再求前缀和可得到函数$f(n)=\sum_{i=1}^{n}\left \lfloor \frac{n}{i} \right \rfloor*i$。
+也即$g(n)=f(n)-f(n-1)$。类似的，对因子个数函数再求前缀和可得到函数$f(n)=\sum_{i=1}^{n}\left \lfloor \frac{n}{i} \right \rfloor$。
+
+{\heiti 因此可以在$O(\sqrt{n})$的时间内求得这类函数(因子和、因子个数)的前缀和，这类分块的思想是杜教筛的基础。}
+\end{note}
 
 \section{欧拉函数}
+\begin{definition}{欧拉函数}{label}
+欧拉函数$\varphi(n)$，表示小于等于$n$的数中与$n$互质的数的数目。
 
+即$\varphi(n)=\sum_{i=1}^{n}{[(n,i)=1]\cdot 1}$。
+\end{definition}
+
+相关性质：
+\begin{itemize}
+\item $\varphi(1)=1$， $\varphi(x)$是偶数$where \ x>2$；
+\item 若$n$是素数$p$的$k$次幂，$\varphi(n)=p^k-p^{k-1}=(p-1)p^{k-1}$；
+\item 若$m,n$互质，$\varphi(mn)=\varphi(m)\varphi(n)$；
+\item 当$n$为奇数时，有$\varphi(n)=\varphi(2n)$；{\heiti (可以理解为此时$2$是$2n$的最小质因子)}
+\item $\varphi(n)=n*(1-\frac{1}{p_1})*(1-\frac{1}{p_2})*...*(1-\frac{1}{p_k}),\quad p_1,p_2,...,p_k$是$n$的质因子；
+\item $n=\sum_{d|n}{\varphi(d)}$ ，质因数分解乘起来即可证明；
+\item $\sum_{i=1}^{n}{[(n,i)=1]\cdot i}=\frac{n\cdot\varphi(n)+[n=1]}{2}$；
+\item $\varphi(n)=\sum_{d|n}{\mu(d)\frac{n}{d}}$；{\heiti (由$n=\sum_{d|n}{\varphi(d)}$ 莫比乌斯反演即得)}
+\end{itemize}
+
+\vbox{}
+
+几个式子总结：
+\begin{itemize}
+\item $\sum_{d|n}\varphi(d)=n$；{\color{red} $\varphi * id = I$}
+\item $\sum_{d|n}\varphi(\frac{n}{d})\cdot d\ =\sum gcd(i, n)(1<=i <=n)\ =\ $$[0,n)$中任选两个数$a,b$，且$a*b$是$n$的倍数的方案数；    {\color{red} $\varphi * I$}
+\item $\sum_{d|n}\sum_{w|d}\varphi(\frac{d}{w})\cdot w=n $乘以 ($n$的因子数目)。  {\color{red} $\varphi * I * id = I * I$}
+\end{itemize}
+
+\vbox{}
+
+{\heiti 求解欧拉函数单值}
+
+若时间卡的比较紧，先筛选下素数。
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/euler.cpp}
+
+\vbox{}
+
+{\heiti 欧拉函数线性筛}
+
+$p$为$N$的素因子，若$p^2 | N$，则$\varphi(N)=\varphi(\frac{N}{p})*p$ ；否则$\varphi(N)=\varphi(\frac{N}{p})*(p-1)$。
+做素数筛时顺带处理即可。
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/euler-linear.cpp}
+
+\vbox{}
+
+{\heiti 下面来看一些例题。}
+
+\vbox{}
+
+\begin{example}
+求$\sum gcd(i, N)(1<=i <=N)$。\quad [HYSBZ - 2705 ]
+\end{example}
+
+\begin{solution}
+枚举哪些数$d$作为$i$和$N$的$gcd$，则$d=gcd(i,N)$，即$1=gcd(i/d,N/d)$。记答案为$f(N)$，有$f(N)=\sum_{d|N}\varphi(\frac{N}{d})*d$为答案。
+
+同时$f(n)$还表示$[0,n)$中任选两个数$a,b$，且$a\cdot b$是$n$的倍数的方案数。（下面例2）
+
+由于是积性函数，素数次幂欧拉值可以$O(1)$得到，只剩下质因子分解的时间。总时间复杂度$O(\sqrt{n})$。
+\end{solution}
+
+\vbox{}
+
+\begin{example}
+定义$f(n)=$选两个$[0,n)$的整数$a,b$，且$ab$不是$n$的倍数的方案数。求$g(n)=\sum_{d|n}f(d)$。
+数据组数$1\le T\le 20000,\ 1\le n \le 10^9$。  \quad [HDU - 5528 ] icpc2015长春B
+\end{example}
+
+\begin{solution}
+我们考虑$f(n)$怎么计算，$f(n)$等于$n^2$减去$ab$是$n$的倍数的方案数。
+
+令$h(n)$表示$ab$是$n$的倍数的方案数，则$h(n)=\sum_{d|n}\varphi(\frac{n}{d})\cdot d$。      
+如何理解呢？我们去枚举$gcd(a,n)$的值，可知这个值会等于$n$的某个因子，因此我们枚举$n$的因子，则当$gcd(a,n)=d$时，即$gcd(\frac{a}{d},\frac{n}{d})=1 $，$a$有$\varphi(\frac{N}{d})$种取值，由于a只有$N$的因子d，则$b$要包含$N/d$这个因子，那么有多少$b$满足呢？即$N/N/d=d$个 。因此$h(n)=\sum_{d|n}\varphi(\frac{n}{d})\cdot d$。 
+
+所以所求为$g(n)=\sum_{d|n}f(d)=\sum_{d|n}d^2-\sum_{d|n}h(d)$。  
+
+对于第二项，质因子分解后，则$\sum_{d|p^k}h(d)=\sum_{d|p^k}\sum_{d'|d}\varphi(\frac{d}{d'})d'$。 
+
+对于$p^k$的因子只有$k+1$个，即$log$级别，因此总共只有质因子分解的时间。
+
+{\heiti 总时间复杂度$O(T*(\frac{\sqrt{n}}{log(n)}+log^2n))$}， 注意这里质因子分解时用素数去筛（先预处理出素数） ，否则$TLE$。
+
+{\heiti 本题还有一种思路：}  我们知道$\sum_{d|n}\varphi(d)=n$，其卷积形式为$\varphi * id=id*\varphi =I$，  其中$I$为恒等函数，$id$为单位函数。本题我们主要求解的是$\sum_{d|n}h(n)=\sum_{d|n}\sum_{w|d}\varphi(\frac{d}{w})\cdot w=
+\sum_{d|n}(\varphi * I)_{(d)}=\varphi* I *id=(\varphi* id )*I=I*I= \sum_{d|n}I(d)\cdot 
+I(\frac{n}{d})=\sum_{d|n}d\cdot \frac{n}{d}=\sum_{d|n}n=n\cdot \sum_{d|n}1 =n$ 乘以 ($n$的因子数目)。     
+
+\begin{note}
+这里卷积操作$*$指的是狄利克雷卷积，后面会介绍。
+\end{note}
+
+\end{solution}
+
+\vbox{}
+
+\begin{example}
+给出$T$组$N,M$，求出$\sum_{i=1}^{N}\sum_{j=1}^Mgcd(i,j)$的值。 $N,M \ 1e6,\quad T\ 1e3$。
+\end{example}
+
+\begin{solution}
+考虑$n=\sum_{d|n}\varphi(d)$，则$\sum_{i=1}^{N}\sum_{j=1}^Mgcd(i,j)=\sum_{i=1}^{N}\sum_{j=1}^M  \sum_{d|gcd(i,j)}\varphi(d)$。 
+
+可以对于每个$d$，去考虑$i,j$的贡献，则有$\sum_{i=1}^{N}\sum_{j=1}^M  \sum_{d|gcd(i,j)}\varphi(d)=\sum_d\varphi(d)*(\sum_{1\le i\le N \ and \ d|i}  \sum_{1\le j\le M \ and \ d|j}1)  =\sum_d\varphi(d)* \left \lfloor \frac{N}{d}\right \rfloor  \left \lfloor \frac{M}{d}\right \rfloor$。
+
+如果直接暴力上式子，时间复杂度是$O(min(N,M))$。   
+
+由于出现了下取整符号，考虑进一步优化：分块块。
+
+$\left \lfloor \frac{N}{d} \right \rfloor$ 和$\left \lfloor \frac{M}{d}\right \rfloor$在一起分块的区间
+最多只有$2\left \lfloor \sqrt{n}\right \rfloor+2\left \lfloor \sqrt{m}\right \rfloor$ 段。
+
+{\heiti 总时间复杂度}    $O(1e6+T*(\sqrt{n}+\sqrt{m}))$    
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/euler-example3.cpp}
 
 \section{莫比乌斯函数}
+莫比乌斯函数$\mu(n)$是做莫比乌斯反演的时候一个很重要的系数。
+
+\begin{definition}{莫比乌斯函数}{label}
+$$
+\mu(x)=\left\{\begin{array}{c}{1, x=1} \\ {(-1)^{k}, x=p_{1} p_{2} \cdots p_{k}} \\ {0, x=o t h e r s}\end{array}\right.
+$$
+\end{definition}
+
+相关性质：
+\begin{itemize}
+\item $[n=1]=\sum_{d|n}{\mu(d)}$ ，将$\mu (d)$看作是容斥的系数即可证明。 也可以记作$e=\mu * id$，其中$e$为元函数，即$\mu$在狄利克雷卷积的乘法中与单位函数$id$互为逆元。 
+\begin{proof}
+设$n^*=p_1...p_k$  可知只有当$d|n^*$时，$\mu$值有贡献，所以$n>1$时有：       
+$$
+\sum_{d|n}\mu(d)=\sum_{d|n^*}\mu(d)=\sum_{i=0}^kC_k^i(-1)^i=(1-1)^k=0
+$$
+\end{proof}
+
+\item $\varphi(n)=\sum_{d|n}{\mu(d)\frac{n}{d}}$， 也写作 $\sum_{d|n}{\frac{\mu(d)}{d}}=\frac{\phi(n)}{n}$， {\heiti 由$n=\sum_{d|n}{\varphi(d)}$ 莫比乌斯反演即得}。
+\begin{note}
+后面会介绍莫比乌斯反演。
+\end{note}
+\end{itemize}
+
+\vbox{}
+
+{\heiti 求莫比乌斯函数单值}
+
+$O(\sqrt{n}/log\sqrt{n})$
+\lstinputlisting[language=C++, style=codestyle2]{code05/mobiwusi.cpp}
+
+\vbox{}
+
+{\heiti 莫比乌斯函数线性筛}
+$O(n)$
+\lstinputlisting[language=C++, style=codestyle2]{code05/mobi-linear.cpp}
+
+\vbox{}
+
+\begin{example}
+求$1<=x,y<=N$且$Gcd(x,y)$为素数的数对$(x,y)$有多少对。$N 1e7$。\quad (bzoj2818)
+\end{example}
+
+\begin{solution}
+\begin{enumerate}
+\item {\color{red}  方法一。}
+
+枚举小于$N$的素数，由于$x,y$可以交换，不妨设$x<y$，则求$gcd(x,y)=p$等价于$gcd(x/p,y/p)=1$。枚举
+素数，对于一个素数，再枚举$y=p,2p,...,kp$ ，$x$的方案数即求一个欧拉函数的前缀和。于是先预处理出欧拉函数前缀。
+
+{\heiti 时间复杂度：}预处理$O(1e7)$，每个询问是$O(N/logN)$。 
+
+\item {\color{red}  方法二。}
+
+枚举素数$p$，令$n=\lfloor\frac{N}{p}\rfloor$，则求
+$$
+\sum_{i=1}^n\sum_{j=1}^{n}[gcd(i,j)=1]
+$$
+（其实到这一步直接用欧拉函数就行了，即法1，下面用莫比乌斯函数）即求
+$$
+\sum_{i=1}^n\sum_{j=1}^{n}\sum_{d|gcd(i,j)}\mu(d)
+$$
+即
+$$
+\sum_{d=1}^n\mu(d)*\sum_{i=1}^{\lfloor\frac{n}{d}\rfloor}\sum_{j=1}^{\lfloor\frac{n}{d}\rfloor}1
+$$
+即
+$$
+\sum_{d=1}^n\mu(d)\lfloor\frac{n}{d}\rfloor\lfloor\frac{n}{d}\rfloor
+$$
+由于我们要枚举素数$p$，即这里的$n=N/p$  ，如果我们纯暴力计算上面和式（先筛出$\mu$），时间复杂度
+是$O(\sum_{i=1}^N\frac{N}{i},\ where \ i \ is \ prime)=O(NlogN/logN)\approx O(N)$。  
+
+这样复杂度比方法一是要差的。因为方法一是$O(N/logN)$。
+考虑可不可以进一步优化？  
+
+对于一个$n$，上面和式中，$\lfloor\frac{n}{d}\rfloor$只有$\sqrt{n}$种取值，即一段$d$对应的$\lfloor\frac{n}{d}\rfloor$值是相同的，
+因此只要有连续一段的$\mu$的和值（预处理前缀和），即可$O(\sqrt n)$求解上面和式。
+
+{\heiti 因此时间复杂度是（对于每个询问）： $O(\sum_{i=1}^n\sqrt{\frac{N}{i}},\ where \ i \ is \ prime)=O(N/logN)$。
+
+时间复杂度同方法一。
+
+本题是一道经典的题目，使用了常见的$\varphi,\mu$两种函数求解。}
+
+$O(N/logN)$不是很优秀，考虑能不能进一步优化。
+
+\item {\color{red}  方法三。 \quad (bzoj2820)} 
+
+即现在要求$\sum_p\sum_{d=1}^{\frac{N}{p}}\mu(d)\lfloor\frac{\lfloor \frac{N}{p} \rfloor }{d}\rfloor\lfloor\frac{ \lfloor \frac{N}{p} \rfloor}{d}\rfloor=\sum_p\sum_{d=1}^{\frac{N}{p}}\mu(d)\lfloor \frac{N}{pd}\rfloor\lfloor\frac{N}{pd}\rfloor$。      
+
+考虑枚举$D=pd$ ，则原式等于$\sum_D\lfloor \frac{N}{D} \rfloor \lfloor \frac{N}{D} \rfloor\sum_{p|D}\mu(\frac{D}{p})\ ,\ where\ p \ is \ prime$。   
+
+令$g(n)=\sum_{p|n}\mu(\frac{n}{p}) \ ,\ where \ p \ is \ prime $ ，可以预处理出其前缀和，因此可以分块块。  
+
+{\heiti 时间复杂度：}   $O(1e7)+T*O(\sqrt{N})$。
+\end{enumerate}
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/mobi-bzoj2820.cpp}
+
+\vbox{}
+
+\begin{example}
+给出$T$组$N,M$，求出$\sum_{i=1}^{N}\sum_{j=1}^Mlcm(i,j)$的值。     $N,M\le 1e7,\ T\le 1e3$。     [HYSBZ - 2154 ]
+\end{example}
+
+\begin{solution}
+\label{exa:lcm}
+如果求$gcd$，直接用欧拉函数经典公式换掉分块即可。
+
+而对于$lcm$,原式等价于$\sum_{i=1}^{N}\sum_{j=1}^M\frac{ij}{gcd(i,j)}$。 
+
+我们考虑枚举$d=gcd(i,j)$，则有原式$=\sum_{d}\sum_{i=1}^{\lfloor\frac{N}{d}\rfloor}\sum_{j=1}^{\lfloor\frac{M}{d}\rfloor}\frac{di\cdot dj}{d}\ ,\ where \ i,j \ is \ co-prime=\sum_{d}d \sum_{i=1}^{\lfloor\frac{N}{d}\rfloor}\sum_{j=1}^{\lfloor\frac{M}{d}\rfloor}[gcd(i,j)==1]ij$。 
+
+为了方便，我们定义函数$f(n,m)=\sum_{i=1}^n\sum_{j=1}^m[gcd(i,j)==1]ij$， 这个式子很经典，经常出题。  
+
+出现了熟悉的$[==1]$，我们用$\mu$换掉，则得$f(n,m)=\sum_{i=1}^{n}\sum_{j=1}^{m}\sum_{d'|gcd(i,j)}\mu(d')ij$。 
+
+如果从正面考虑（枚举$i,j$），复杂度不行，考虑枚举$d'$，则$f(n,m)=\sum_{d'}\mu(d')\cdot (d'+2d'+...+\lfloor \frac{n}{d'}\rfloor d')\cdot (d'+2d'+...+\lfloor \frac{m}{d'}\rfloor d')=\sum_{d'} \mu(d')\cdot (\sum_{i=1}^{\lfloor \frac{n}{d'}\rfloor}id'\sum_{j=1}^{\lfloor \frac{m}{d'}\rfloor}jd') =\frac{1}{4}\sum_{d'}\mu(d')d'^{2}\cdot \lfloor \frac{n}{d'}\rfloor(\lfloor \frac{n}{d'}\rfloor+1)\cdot \lfloor \frac{m}{d'}\rfloor(\lfloor \frac{m}{d'}\rfloor+1)$。 
+
+有了$f(n,m)$的式子，原式$=\frac{1}{4}\sum_dd\cdot \sum_{d'}\mu(d')d'^{2}\cdot \lfloor \frac{\lfloor\frac{N}{d} \rfloor }{d'}\rfloor(\lfloor \frac{\lfloor\frac{N}{d} \rfloor }{d'}\rfloor+1)\cdot \lfloor \frac{\lfloor\frac{M}{d} \rfloor }{d'}\rfloor(\lfloor \frac{\lfloor\frac{M}{d} \rfloor }{d'}\rfloor+1) =\frac{1}{4}\sum_dd\cdot \sum_{d'}\mu(d')d'^{2}\cdot \lfloor \frac{N}{dd'}\rfloor(\lfloor \frac{N }{dd'}\rfloor+1)\cdot \lfloor \frac{M}{dd'}\rfloor(\lfloor \frac{M }{dd'}\rfloor+1)$。
+
+这个式子直接去做的话，分两次块块，时间复杂度是$O(n^{\frac{3}{4}})$。 
+
+考虑这里$d$和$d'$的特殊性，由于$d\cdot d'\le min(N,M)$，我们可以枚举$D=d\cdot d'$的值，
+则原式$=\frac{1}{4}\sum_{D}\lfloor \frac{N}{D}\rfloor(\lfloor \frac{N }{D}\rfloor+1)\cdot \lfloor \frac{M}{D}\rfloor(\lfloor \frac{M }{D}\rfloor+1)\cdot (D\cdot \sum_{d|D}\mu(d)\cdot d)$。  
+
+设函数$g(n)=n\sum_{d|n}\mu(d)d$，可知$g(n)$是积性函数，且可以线性时间筛出。
+
+因此只要一次分块块即可，对于连续的一块，由维护的$g(n)$的前缀和可$O(1)$得到连续的一段$g(D)$的值。
+
+{\heiti 时间复杂度：    预处理$O(1e7)$，每个询问是$O(\sqrt{N}+\sqrt{M})$。
+
+注：  $g(n) = n\sum_{d|n}{d\mu(d)}$   是一个积性函数，可以用欧拉筛搞出。注意$\mu$很好，当有大于2次幂时贡献为0了。}
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/mobi-HYSBZ2154.cpp}
+
 
 
 \section{莫比乌斯反演}
+\begin{definition}{莫比乌斯反演的一种形式}{label}
+设$F$是$f$的因子和型函数，即
+$$
+F(n)=\sum_{d|n}{f(d)}
+$$
+那么对于所有的正整数$n$，都有下面式子成立
+$$
+f(n)=\sum_{d|n}{\mu(d)F(\frac{n}{d})}
+$$
+即已知$F(n)$，我们可以求出$f(n)$。    
+\end{definition}
+   
+{\heiti 通过欧拉函数的莫比乌斯反演进一步理解容斥与反演：}
+
+我们知道欧拉函数有：$n=\sum_{d|n}\varphi(d)$，由莫比乌斯反演可得$\varphi(n)=\sum_{d|n}\mu(d)\cdot \frac{n}{d}$。
+
+我们知道欧拉函数的意义是小于n的数中与n互质的数的个数，
+那为啥这个$\mu$乘一乘、加一加就能表示欧拉函数了呢？
+
+就是容斥啦，我们考虑$[1,n]$这$n$个数，我们要找的是一些数$k$，有$gcd(k,n)=1$，那显然可能还会有一些数$k$，有$gcd(k,n)>1$   ，那我们要从$n$个数中，减去$gcd>1$的那些数$k$，这些数有多少呢？
+
+考虑将$n$质因子分解得到质因子们$p_1,p_2,...,p_r$ ，显然有$\frac{n}{p_1}$  个$p_1$的倍数$gcd>1$，同理$\frac{n}{p_2},\frac{n}{p_3},...,\frac{n}{p_r}$ ，将这些个数减去；
+
+但会有重复，比如有一个数$p_1p_2$，在两个地方都减去了，要再加回来，同理所有的两素数都是这样，所以加上$\frac{n}{p_1p_2}$等等两个素数作为分母；
+
+再考虑有一个数$p_1p_2p_3$，考虑一个素数时减去了3次，两个时又加上了3次，因此没有减去这样的数，所以要减去$\frac{n}{p_1p_2p_3}$等等三个素数作为分母；
+
+这个就是{\heiti 容斥原理}。
+
+再观察$\varphi(n)=\sum_{d|n}\mu(d)\cdot \frac{n}{d}$，由于$\mu$的定义，这里有贡献的$d$恰好取遍了一个素数、两个素数......的容斥情况，而当$d=1$时，$\mu(1)=1$，即全体个数$n$。
 
 
 \section{积性函数与狄利克雷卷积}
+\subsection{积性函数定义}
+{\heiti 数论函数：}若$f(x)$的定义域为正整数域，值域为复数域，即$f:\mathbb{Z}^+  \rightarrow \mathbb{C}$ ，则称$f(x)$为数论函数。
 
+{\heiti 积性函数：}若$f(x)$为数论函数，$f(1)=1$，且$gcd(m,n)=1$时$f(x)$对所有整数$m$与$n$满足乘法公式$f(mn)=f(m)f(n)$，则称$f(x)$为积性函数。
+
+{\heiti 完全积性函数：}若$f(x)$为数论函数，且对任意正整数$m,n$，都有$f(mn)=f(m)f(n)$，则称其为完全积性函数。
+
+
+
+\subsection{常见的积性函数}
+\begin{itemize}
+\item 元函数\quad $e(n)=[n=1]$，狄利克雷卷积中的乘法单元，完全积性
+\item 单位函数\quad $id(n)=1$，完全积性
+\item 恒等函数\quad $I(n)=n$，完全积性
+\item 幂函数\quad $id^k(n)=n^k$，完全积性
+\item 欧拉函数$\varphi(x)$
+\item 莫比乌斯函数$\mu(x)$
+\item $t$次幂$\sigma$函数 $\sigma_t(n)=\sum_{d|n}d^t$
+\item 因子个数函数$\sigma_0(n)$
+\item 因子和函数$\sigma_1(n)$
+\item 刘维尔函数 $\lambda(n)$
+
+\qquad 定义为将$n$分解后，$n=p_1^{k_1}p_2^{k_2}...p_r^{k_r}$，令$\lambda(n)=(-1)^{k_1+k_2+...+k_r}$。$\lambda(1)=1$  。令$\Omega(n)= k_1+k_2+...+k_r$     则$\lambda(n)=(-1)^{\Omega(n)}$ 。
+\begin{note}
+1.刘维尔函数的狄利克雷逆变换是莫比乌斯函数的绝对值。
+
+2.刘维尔函数与莫比乌斯函数存在下面式子：
+$$
+\left\{\begin{matrix}
+\sum_{d|n}\lambda(d)\mu(\frac{n}{d}) =1  ,\quad n=k^2 \\ 
+\sum_{d|n}\lambda(d)\mu(\frac{n}{d}) =0,\quad  n\neq k^2 
+\end{matrix}\right.
+$$
+\end{note}
+
+\item 使用刘维尔函数定义新的函数$G(n)$，
+$$
+G(n)=\lambda(d_1)+\lambda(d_2)+...+\lambda(d_r)=\sum_{d|n}\lambda(d)
+$$
+$G(n)$也是积性函数。其满足下面的性质：
+$$
+G(n)=\sum _{{d|n}}\lambda (d)={\begin{cases}1&{\text{if }}n{\text{ is a perfect square,}}\\0&{\text{otherwise.}}\end{cases}}
+$$
+\end{itemize}
+
+
+\subsection{不是很常见的积性函数}
+\begin{itemize}
+\item $g(n) = n\sum_{d|n}{d\mu(d)}$  是积性函数。
+
+可以用欧拉筛搞出。注意$\mu$很好，当有大于2次幂时贡献为0了；{\color{red} (\ref{exa:lcm}节中的例题用到了)}
+\item $f(n)=n\sum_{d|n}d\varphi(d)=-n+2*\sum_{i=1}^nLCM(n,i)$是积性函数。    
+
+其$f(p^{k+1})=p*f(p^k)+p^{3(k+1)}-p^{3k+2}=p^3f(p^{k})-p^{k+1}(p-1)$，注意有减法，因此可能要维护一下每个数的最小质因子的指数，也可以$O(n)$预处理。
+{\color{red} (\ref{exa:lcm2}节中的例题用到了)}
+\end{itemize}
+
+
+\subsection{“作用在因子上”}
+
+定义函数$F(n)=\sum_{d|n}f(d)$，若$f(x)$是积性函数，则$F(x)$也是积性函数；反之，若$F(x)$为积性函数，则$f(x)$也是积性函数。
+
+\begin{proof}
+$f(x)$是积性函数，对于$gcd(m,n)=1$,要证明$F(mn)=F(m)F(n)$。设：
+$d_1,d_2,...,d_r$是$n$的因数，$e_1,e_2,...,e_s$是$m$的因数。
+
+$m,n$互质，则$mn$的因子就是上面$r$个因子和$s$个因子两两相乘得到的，共$r*s$个。
+
+又$d_i$和$e_j$互质，则$f(d_ie_j)=f(d_i)f(e_j)$  ，则
+\begin{align*}
+F(mn)&=f(d_1e_1)+f(d_1e_2)+...+f(d_1e_s)+...+f(d_r)f(e_1)+...+f(d_r)f(e_s) \\& = [f(d_1)+f(d_2)+...+f(d_r)]*[f(e_1)+f(e_2)+...+f(e_s)] \\ 
+&=F(n)*F(m)
+\end{align*}
+证毕。
+
+反之，当$F(n)$为积性函数时，证明类似。
+\end{proof}
+
+
+\subsection{狄利克雷卷积}
+\begin{definition}{狄利克雷卷积}{label}
+设$f,g$为两个数论函数，则满足$h(n)=\sum_{d|n}f(d)g(\frac{n}{d})$的函数称为$f$与$g$的狄利克雷卷积函数。也可以理解为$h(n)=\sum_{ij=n}f(i)g(j)$ 。
+\begin{itemize}
+\item 两个积性函数的卷积仍为积性函数；
+\item 狄利克雷卷积满足交换律和结合律，对加法满足分配律。  
+\end{itemize}
+\end{definition}
+
+\begin{note}
+多个函数的狄利克雷卷积类似。$\sum_{ijkl..z=n}f_1(i)f_2(j)f_3(k)...f_{*}(z)$。
+\end{note}
+
+\vbox{}
+
+常见的卷积：
+\begin{itemize}
+\item $\varphi * id = I$
+\item $\mu * id = e$
+\end{itemize}
+
+
+
+\subsection{一些题目}
+
+\begin{example}
+定义$f_0(n)=$满足$pq=n$且$gcd(p,q)=1$的二元组$(p,q)$个数。定义$f_{r+1}(n) = \sum_{uv=n}\frac{f_r(u)+f_r(v)}{2}$。
+若干组询问，每次给出$r,n$，询问$f_r(n)$的值，对$10^9+7$取模。询问次数$1\le q\le 10^6$，$0\le r\le 10^6$，$1\le n\le 10^6$。
+\href{http://codeforces.com/contest/757/problem/E}{cf-757E}
+\end{example}
+
+\begin{solution}
+满足$pq=n$且$gcd(p,q)=1$的二元组个数是多少呢？
+
+显然是$2^{w(n)}$个，其中$w(n)$是$n$的不同的素因子的数目。
+
+那么$f_{r+1}(n)=\sum_{uv=n}\frac{f_r(u)+f_r(v)}{2}$如何计算呢？
+
+$f_{r+1}(n)=\sum_{uv=n}\frac{f_r(u)+f_r(v)}{2}=\sum_{d|n}f_r(d)$。 
+
+由于$r\le 1e6$，询问又有$1e6$，那我们不可能暴力搞。
+
+我们知道$f_r(n)$是积性函数，所以问题转为求解$f_r(p^k)$。
+
+由于$f_r(p^k)=\sum_{i=0}^{i=k}f_{r-1}(p^i)$，且对任意$p$，$k>=1$时，有$f_0(p^k)=2$，因此$f_r(p^k)$的值和$p$无关。预处理所有的$r,k$组合即可。$k$是$log$级别的。
+
+{\heiti 时间复杂度：}  $O(rlogn+T*(\frac{\sqrt{n}}{log10^3}))$   
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/cf757E.cpp}
+
+\vbox{}
+
+\begin{example}
+$T$个$N$，依次计算$\sum_{a=1}^{N}\sum_{b=1}^NLCM(a,b)$ \quad             $N,T\le 10^6$
+\end{example}
+
+\begin{solution}
+\label{exa:lcm2}
+前面我们解过$\sum_{a=1}^{N}\sum_{b=1}^MLCM(a,b)$，复杂度可以是$T*O(\sqrt{N}+\sqrt{M})$。显然解这题是不够的。
+
+考虑本题，如果直接令一个函数$f(N)=\sum_{a=1}^{N}\sum_{b=1}^NLCM(a,b)$，其是不是积性函数呢？
+
+可惜不是，{\heiti 但这个函数$f(n)=-n+2*\sum_{i=1}^nLCM(n,i)$是积性函数。}
+
+为啥长这样... 其实这样很美，因为$\sum_{i=1}^Nf(i)$即为本题所求。
+
+但$f(n)$目前这个样子还是不知道怎么搞，我们化简一下。
+
+设$gcd(n,i)=d$，则$f(n)=-n+2\sum_{i=1}^n\frac{ni}{d}=-n+2n\sum_{d|n}\sum_{i\le n \ \& \ gcd(i,n)=d}\frac{i}{d}=-n+2n\sum_{d|n}\sum_{k\le \frac{n}{d}\ \& \ gcd(k,\frac{n}{d})=1}k=-n+2n\sum_{d|n}\sum_{k\le d\  \& \ gcd(k,d)=1}k=-n+2n((\sum_{d|n\ \& \ d>1}\frac{d\varphi(d)}{2})+1)=n\sum_{d|n}d\varphi(d)$。 
+
+即$f(n)=-n+2*\sum_{i=1}^nLCM(n,i)=n\sum_{d|n}d\cdot \varphi(d)$ 是积性函数。
+
+所以，只要筛出这个积性函数，就可以$O(1)$回答一个询问。
+
+如何去筛这个函数呢？考虑一个数$p^k$，若它新出现一个质因子变为$p^kq$，则函数值$f(p^kq)=f(p^k)f(q)$，若从$p^k$变为$p^{k+1}$，则$f(p^{k+1})=p*f(p^k)+p^{3(k+1)}-p^{3k+2}=p^3f(p^{k})-p^{k+1}(p-1)$   ， 后面的部分是$p\varphi(p^{k+1})$，因此欧拉筛搞一搞即可 （因为有减法，而不仅仅是乘法，可能要维护一下每个数最小质因数指数幂后的数）。
+
+{\heiti 时间复杂度：} $O(1e6+T)$
+
+\end{solution}
 
 \section{积性函数前缀和}
+{\heiti 一些式子：}
+
+\begin{itemize}
+\item $$
+\left\lceil\frac{n}{a b}\right\rceil=\left\lceil \frac{\left\lceil \frac{n}{a}\right\rceil}{b}  \right\rceil, \quad\left\lfloor\frac{n}{a b}\right\rfloor=\left\lfloor\frac{\left\lfloor\frac{n}{a}\right\rfloor}{b}\right\rfloor
+$$
+
+\item $\left\lceil\frac{n}{i}\right\rceil$只有$O(\sqrt{n})$种取值。
+\end{itemize}
+
+$\left \lceil \frac{n}{i} \right \rceil$ 为什么只有$O(\sqrt{n})$种取值呢？若$i<\sqrt{n}$ 则由于$i$只有$\sqrt{n}$种取值，所以$\left \lceil \frac{n}{i} \right \rceil$只有$\sqrt{n}$种取值；若$i>\sqrt{n}$  ，则$\left \lceil \frac{n}{i} \right \rceil<\sqrt{n}$  ，所以 $\left \lceil \frac{n}{i} \right \rceil$最多也只有$\sqrt{n}$种取值。
+
+\vbox{}
+
+{\heiti 一些常用复杂度计算：}
+
+\begin{itemize}
+\item $\sum_{i=1}^{n}\frac{n}{i}=O(nlogn)$
+\item $$\sum_{i=1}^{n^x}\sqrt{\frac{n}{i}}=O(n^{(\frac{1}{2}+\frac{1}{2}x)})$$
+
+例如$\sum_{i=1}^{\sqrt{n}}\sqrt{\frac{n}{i}}=O(n^{\frac{3}{4}}$)     ，   $\sum_{i=1}^{n}\sqrt{\frac{n}{i}}=O(n)$   ，$\sum_{i=1}^{n^{\frac{1}{3}}}\sqrt{\frac{n}{i}}=O(n^{\frac{2}{3}})$。
+\end{itemize}
+
+\vbox{}
+
+{\heiti 前缀和：}
+
+给出一个积性函数$f(x)$，求$\sum_{i=1}^nf(i)$。
+
+通常，$f(p^k)$可以比较容易的由$f(p^{k-1})$等值递推出来，其他项可以直接由积性函数的性质由$f(x)=f(d)*f(\frac{x}{d})$得到。因此很多积性函数都可以在欧拉筛的过程中顺便递推出前$n$项的值，时间复杂度$O(n)$。
+
+\subsection{一些题目}
+
+\begin{example}
+设$\sigma(n)$为因子和函数，现在要求解$\sum_{i=1}^n\sigma(i)$。 
+\end{example}
+
+
+\begin{solution}
+一种简单的思考方法，考虑函数$f(n)=\sum_{i=1}^ni*\lfloor \frac{n}{i}\rfloor$。  
+
+发现$f(n)-f(n-1)=\sum_{i=1}^ni*(\lfloor \frac{n}{i}\rfloor-\lfloor \frac{n-1}{i}\rfloor)=\sigma(n)$。  
+
+因此$f(n)$为我们所求，分块块即可$O(\sqrt{n})$。
+\end{solution}
+
+\begin{note}
+因此我们也可以线性筛出函数$f(1...n)=\sum_{i=1}^ni*\lfloor \frac{n}{i}\rfloor$。 
+\end{note}
+
+\vbox{}
+
+\begin{example}
+线性筛出函数$f(n)=\sum_{i=1}^n\left \lceil \frac{n}{i}  \right \rceil$ ，即求$f(1),f(2),...,f(n)$。
+\end{example}
+
+
+\begin{solution}
+注意下取整和上取整的不同，下取整的差分减一对应下标减一的因子个数函数，即$f(n)-f(n-1)=\tau(n-1)+1$。
+
+因此先预处理出因子个数函数，再移位+1，最后求前缀和。
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/Factor-number-function-prefix.cpp}
+
+\vbox{}
+
+\begin{example}
+求$ans =\sum^n_{i=1}\sum^i_{j=1} (n\  mod (i \times j))$     \quad     $1\le n \le 10^{11}$   \quad 
+\href{https://www.oj.swust.edu.cn/contest/problem/1253-G}{18四川省赛G}
+\end{example}
+
+
+\begin{solution}
+{\heiti \color{red} 解法一}
+
+首先写作$\sum^n_{i=1}\sum^i_{j=1} (n-\left \lfloor \frac{n}{ij} \right \rfloor*ij)=\sum^n_{i=1}\sum^i_{j=1} n-\sum^n_{i=1}\sum^i_{j=1}\left \lfloor \frac{n}{ij} \right \rfloor*ij $      
+
+对于$\sum^n_{i=1}\sum^i_{j=1} n$不用说了，对于$\sum^n_{i=1}\sum^i_{j=1}\left \lfloor \frac{n}{ij} \right \rfloor*ij =\sum^n_{i=1}i*\sum^i_{j=1}\left \lfloor\frac{\left \lfloor \frac{n}{i} \right \rfloor} {j}\right \rfloor*j$ 
+
+对于第二维，所求是j$\in [1,i]$，我们这里求$[1,n]$，由对称性可知$[1,i]$的两倍减去$[i=j]$的情况即为所求。
+
+所以现在目标是$\sum^n_{i=1}i*\sum^n_{j=1}\left \lfloor\frac{\left \lfloor \frac{n}{i} \right \rfloor} {j}\right \rfloor*j$。 
+
+由于$\left \lfloor \frac{n}{i} \right \rfloor$ 只有$O(\sqrt{n})$种取值，我们枚举$\left \lfloor \frac{n}{i} \right \rfloor$的值，对应一段$i$区间，可知对于这一段$i$，第二维值是相同的。
+
+而对于第二维的计算相同，都是分块思想。所以写一个solve函数用于求解$f(n)=\sum_{i=1}^{n}\left \lfloor \frac{n}{i} \right \rfloor*i$ 即可。 
+
+{\heiti 时间复杂度：  $O(\sum_{i=1}^{\sqrt{n}}\sqrt{\frac{n}{i}})=O(n^{\frac{3}{4}})$  （只有$O(\sqrt{n})$种取值）         }
+
+这种方法会TLE，      1e11大概要跑37s。
+
+{\heiti \color{red} 解法二  （常见套路）}   
+
+定义$g(n)=f(n)-f(n-1)=\sum_{i=1}^{n}i* (\left \lfloor \frac{n}{i}\right \rfloor-\left \lfloor \frac{n-1}{i} \right \rfloor)=\sum_{d|n}d$ 。   
+
+对于$g(n)$，即一个数的因子和，我们可以$O(n)$求解出其前$n$项，对于本题$n \ 1e11$ ，我们处理出$g$的前$n^{\frac{2}{3}}$项 ，然后求个前缀和就得到了$f(n)$ ，这一部分的时间复杂度是$O(n^\frac{2}{3})$  。  
+
+所以对于$\sum^n_{i=1}i*\sum^n_{j=1}\left \lfloor\frac{\left \lfloor \frac{n}{i} \right \rfloor} {j}\right \rfloor*j$，当$\left \lfloor \frac{n}{i}\right \rfloor<n^\frac{2}{3}$时，可以$O(1)$得到第二层结果。当$\left \lfloor \frac{n}{i}\right \rfloor>n^{\frac{2}{3}}$时，使用原先的方法求解，这一部分的时间复杂度是$O(\sum_{i=1}^{n^\frac{1}{3}}\sqrt{\frac{n}{i}})=O(n^\frac{2}{3})$。
+
+{\heiti 时间复杂度： $O(n^\frac{2}{3})$，       1e11大概要跑5s}
+\end{solution}
+
+\lstinputlisting[language=C++, style=codestyle2]{code05/18sichuanG.cpp}
+
 
 
 \section{杜教筛}
+设$S(n)=\sum_{i=1}^nf(i)$，下面将求解$S(n)$的过程一般化：
+
+任意数论函数$g$，设$h=f*g$({\color{red} 狄利克雷卷积})，有$\sum_{i=1}^nh(i)=\sum_{i=1}^ng(i)S(\lfloor \frac{n}{i}\rfloor)$   （改变计数方式易得）
+
+从右式分出一个$i=1$，移项可得$g(1)S(n)=\sum_{i=1}^nh(i)-\sum_{i=2}^ng(i)S(\lfloor \frac{n}{i}\rfloor)$
+
+{\heiti 如果我们可以$O(\sqrt{n})$计算$\sum_{i=1}^nh(i)$，$O(1)$计算$g$的前缀和，就可以快速把问题递归为同类子问题}，时间复杂度为$O(\sum_{i=1}^{\sqrt{n}}\sqrt{\frac{n}{i}})=O(n^{\frac{3}{4}})$       （具体计算这里略去）
+
+如果$f$有一些比较好的性质，比如是积性函数，我们可以用欧拉筛求出前$n^{\frac{2}{3}}$项，更后面的项再递归，时间复杂度为$O(n^{\frac{2}{3}})$。 
+
+\subsection{一些要注意的地方}
+\begin{itemize}
+\item 会卡map；
+\item 一个记忆化的技巧是，由于我们要求解的始终是$S(n除去一些数)$，因此我们可以开一个数组，比如$p[]$，$p[i]$的地方存储$S(\frac{n}{i})$的值，显然由于我们预处理了$i<n^{\frac{2}{3}}$的情况，则$p$数组的大小只有$n^{\frac{1}{3}}$大小；
+\item 如果出现$\sum_{i=1}^N\sum_{d|i}$的形式要求解，直接对后面杜教筛可能不太好搞，因为找不到合适的狄利克雷卷积或者不好找。我们可以尝试调换贡献的枚举（这里枚举$i$是$d$的多少倍），变换为$\sum_{i=1}^N\sum_{d=1}^{\lfloor \frac N i \rfloor}f(d)$的形式，对后面一个求$\sum f$的问题做杜教筛，而前面不影响复杂度(分$i<n^{\frac 1 3}$和$>$考虑)。如：
+
+\qquad 要求函数$f(i) = i \sum_{d | i} d \varphi(d)$的前缀和，
+
+$$
+\begin{array}{l}{\sum_{i=1}^{N} f(i)=\sum_{i=1}^{N} i \sum_{d | i} d \varphi(d)} \\ {=\sum_{d=1}^{N} d \varphi(d) \sum_{k=1}^{\frac{N}{d}} k d} \\ {=\sum_{d=1}^{N} d^{2} \varphi(d) \sum_{k=1}^{\frac{N}{d}} k} \\ {=\sum_{k=1}^{N} k \sum_{d=1}^{\left\lfloor\frac{N}{k}\right\rfloor} \phi(d) d^{2}} \\ {=\sum_{i=1}^{N} i \sum_{d=1}^{\left\lfloor\frac{N}{i}\right\rfloor} \phi(d) d^{2} \quad \left( replace\ symbol\ k\ with\ i\right)}  \end{array}
+$$ 
+如果$f(x)=\varphi(x)x^2\ ,\ S(n)=\sum_{i=1}^nf(i)$  可以做杜教筛，则上面的式子也行，不影响时间复杂度 $O(n^{\frac 2 3})$。
+
+以及下面的第二、三个例子\ref{exa:dujiao1}也是类似的；
+\item $f(x)=\varphi(x)x^k$都是可以搞的，即$h(x)=x^{k+1}\ ,\ g(x)=x^k$。
+\end{itemize}
+
+\subsection{一些题目}
+\begin{example}
+求$\sum_{i=1}^n\varphi(i)$和$\sum_{i=1}^n\mu(i),\quad n\le 1e9$  \quad 多组
+\end{example}
+\begin{solution}
+\begin{itemize}
+\item 考虑有没有函数$g$，这个函数易于计算前缀和，且和$\varphi$狄利克雷卷积后的函数也较易于计算前缀和。
+对于欧拉函数，这是显然存在的，即$g(n)=id(n)\ ,\ h(n)=n\ ,\ I = \varphi * id$。 
+
+设$S(n)=\sum_{i=1}^n\varphi(i),\ g(n)=1$。则$g(1)S(n)=\sum_{i=1}^nh(i)-\sum_{i=2}^ng(i)S(\lfloor \frac{n}{i}\rfloor)$。 
+
+带入$g,h$的值后，有$S(n)=\sum_{i=1}^ni-\sum_{i=2}^nS(\lfloor \frac{n}{i}\rfloor)$。
+
+用欧拉筛求出欧拉函数的前$n^{\frac{2}{3}}$，求前缀和得到$S$的前$n^{\frac{2}{3}}$项。$\lfloor \frac{n}{i}\rfloor$ 较大时递归计算，总时间复杂度$O(n^\frac{2}{3})$。
+
+\item 对于 $梅滕斯函数(Mertens)=\sum_{i=1}^n\mu(i)$，同样的，我们寻找函数$g$，有$h=\mu*g$，其中$g$可以$O(1)$计算前缀和。
+
+我们知道$\mu$的一个性质是$\sum_{d|n}\mu(d)=[n==1]$，  它的卷积形式是$e=\mu * id$。
+
+因此$g(1)S(n)=\sum_{i=1}^nh(i)-\sum_{i=2}^ng(i)S(\lfloor \frac{n}{i}\rfloor)$，化简后得$S(n)=1-\sum_{i=2}^nS(\lfloor \frac{n}{i}\rfloor)$  。
+\end{itemize}
+\end{solution}
+\lstinputlisting[language=C++, style=codestyle2]{code05/varphi-mu.cpp}
+
+\vbox{}
+
+
+\begin{example}
+求\quad (51nod1237)
+$$
+\sum_{i=1}^{n}\sum_{j=1}^{n}gcd(i,j)
+$$
+
+\end{example}
+\begin{solution}
+\label{exa:dujiao1}
+\begin{align*}
+ans=2\sum_{i=1}^n\sum_{j=1}^igcd(i,j)-\frac {n(n+1)}{ 2}=2\sum_{i=1}^n\sum_{d|i}\varphi(\frac i d)d-\frac {n(n+1)}{ 2} \\ =2\sum_{d=1}^nd\sum_{k=1}^{\lfloor \frac n d \rfloor}\varphi(k)  -\frac {n(n+1)}{ 2}
+\end{align*}
+这里对第一维分块不影响复杂度，只要对第二维做杜教筛即可，$I=\varphi * id$。
+\end{solution}
+
+
+\vbox{}
+
+
+\begin{example}
+求\quad {51nod 1238}
+$$
+ans=\sum_{i=1}^n\sum_{j=1}^n LCM(i,j)    \quad  n \le 10^{10}
+$$
+\end{example}
+\begin{solution}
+
+\begin{align*}
+ans=\sum_{i=1}^n\sum_{j=1}^n [i,j]\\
+=2\sum_{i=1}^n\sum_{j=1}^i [i,j]-\frac{n(n+1)}2\\
+Let\ s(n)=\sum_{i=1}^n\sum_{j=1}^i [i,j]\ ,\ f(n)=\sum_{i=1}^n [i,n]\\
+\end{align*}
+
+{\color{red}
+\begin{align*}
+f(n)=\sum_{i=1}^n [i,n]\\
+=\sum_{i=1}^n\frac{in}{(i,n)}\\
+=n\sum_{i=1}^n\frac i{(i,n)}\\
+=n\sum_{d|n}\sum_{i=1}^n[(i,n)=d]\frac i d\\
+=n\sum_{d|n}\sum_{i=1}^{\frac n d}[(i,\frac n d)=1]i\\
+=n\sum_{d|n}\sum_{i=1}^{d}[(i,d)=1]i\quad (due\ to\ the\ symmetry\ of\ the\ factor)\\
+=n\sum_{d|n}\frac{\phi(d)d+[d=1]}2\\
+=n\frac{1+\sum_{d|n}\phi(d)d}2
+\end{align*}
+}
+
+{\color{blue}
+\begin{align*}
+s(n)=\sum_{i=1}^n f(i)\\
+=\frac{\sum_{i=1}^n i(1+\sum_{d|i}\phi(d)d)}2\\
+=\frac{\sum_{i=1}^n i+\sum_{i=1}^n i\sum_{d|i}\phi(d)d}2\\
+=\frac{\frac{n(n+1)}2+\sum_{i=1}^n i\sum_{d|i}\phi(d)d}2\\
+=\frac{\frac{n(n+1)}2+\sum_{d=1}^n\phi(d)d\sum_{d|i}i}2\\
+=\frac{\frac{n(n+1)}2+\sum_{d=1}^n\phi(d)d^2\sum_{i=1}^{\lfloor\frac n d\rfloor}i}2\\
+=\frac{\frac{n(n+1)}2+\sum_{i=1}^n i\sum_{d=1}^{\lfloor\frac n i\rfloor}\phi(d)d^2}2\\
+\end{align*}
+}
+
+{\color{green}
+\begin{align*}
+ans=2s(n)-\frac{n(n+1)}2\\
+=\sum_{i=1}^n i\sum_{d=1}^{\lfloor\frac n i\rfloor}\phi(d)d^2\\
+\end{align*}
+}
+
+可以看到杜教筛的形式，这里对第一维分块不影响复杂度，只要对第二维做杜教筛即可。
+\begin{align*}
+Here's\ how\ to\ make\ a\ Dujiao\ sieve\ for\ \phi(d)d^2\\
+Let\ f(d)=\phi(d)d^2\ ,\ S(n)=\sum_{d=1}^nf(d)\\
+n=\sum_{d|n}\phi(d)\\
+n^3=\sum_{d|n}\phi(d)n^2\\
+=\sum_{d|n}\phi(d)d^2(\frac n d)^2 \quad Now\ you\ can\ see\ that\ it's\ n^2\ and\ n^3\\ 
+=\sum_{d|n}h(d)(\frac n d)^2\\
+So\ \sum_{i=1}^n i^3=\sum_{i=1}^n\sum_{d|i}f(d)(\frac i d)^2\\
+=\sum_{d=1}^n f(d)\sum_{d|i}(\frac i d)^2\\
+=\sum_{d=1}^n f(d)\sum_{i=1}^{\lfloor\frac n d \rfloor}i^2\\
+=\sum_{i=1}^n i^2\sum_{d=1}^{\lfloor\frac n i\rfloor}f(d)\\
+=\sum_{i=1}^n i^2 S(\lfloor\frac n i\rfloor)\\
+S(n)=\sum_{i=1}^n i^3-\sum_{i=2}^ni^2 S(\lfloor\frac n i\rfloor)
+\end{align*}
+\end{solution}
+
+
 
 
 \section{拓展埃氏筛}
@@ -424,7 +1142,7 @@ $\chi(n)$是一个积性函数，所以我们在$MLLMO$的时候可以乘上这�
 	考虑有没有其他方法，比如直接从$MLLMO$的转移式考虑。
 \end{note}
 
-\section{rng58-clj等式}
+% \section{rng58-clj等式}
 
 
 \vbox{}
@@ -432,5 +1150,6 @@ $\chi(n)$是一个积性函数，所以我们在$MLLMO$的时候可以乘上这�
 \vbox{}
 
 \begin{problemset}
-	\item xx
+	\item HDU6588\quad 2019ICPC网络赛\quad 经典gcd求和
+	\item HDU6707\quad 2019CCPC网络赛\quad 杜教筛
 \end{problemset}
